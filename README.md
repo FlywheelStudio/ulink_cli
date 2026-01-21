@@ -4,18 +4,39 @@ CLI tool for verifying universal links (iOS) and app links (Android) configurati
 
 ## Installation
 
+### Quick Install
+
+**macOS / Linux:**
 ```bash
-# Install Dart SDK if not already installed
-# Then compile the CLI tool
-cd ulink_cli
-dart pub get
-dart compile exe bin/ulink.dart -o ulink
+curl -fsSL https://raw.githubusercontent.com/FlywheelStudio/ulink_cli/main/scripts/install.sh | bash
 ```
 
-Or install globally:
-```bash
-dart pub global activate --source path .
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/FlywheelStudio/ulink_cli/main/scripts/install.ps1 | iex
 ```
+
+### Install Specific Version
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/FlywheelStudio/ulink_cli/main/scripts/install.sh | bash -s -- --version v1.0.0
+```
+
+**Windows:**
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/FlywheelStudio/ulink_cli/main/scripts/install.ps1))) -Version v1.0.0
+```
+
+### For Dart Developers
+
+```bash
+dart pub global activate --source git https://github.com/FlywheelStudio/ulink_cli.git
+```
+
+### Manual Download
+
+Download binaries directly from [GitHub Releases](https://github.com/FlywheelStudio/ulink_cli/releases).
 
 ## Usage
 
