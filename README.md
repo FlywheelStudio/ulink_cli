@@ -8,24 +8,24 @@ CLI tool for verifying universal links (iOS) and app links (Android) configurati
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/FlywheelStudio/ulink_cli/main/scripts/install.sh | bash
+curl -fsSL https://ulink.ly/install.sh | bash
 ```
 
 **Windows (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/FlywheelStudio/ulink_cli/main/scripts/install.ps1 | iex
+irm https://ulink.ly/install.ps1 | iex
 ```
 
 ### Install Specific Version
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/FlywheelStudio/ulink_cli/main/scripts/install.sh | bash -s -- --version v1.0.0
+curl -fsSL https://ulink.ly/install.sh | bash -s -- --version v1.0.0
 ```
 
 **Windows:**
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/FlywheelStudio/ulink_cli/main/scripts/install.ps1))) -Version v1.0.0
+& ([scriptblock]::Create((irm https://ulink.ly/install.ps1))) -Version v1.0.0
 ```
 
 ### For Dart Developers
