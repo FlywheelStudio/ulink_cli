@@ -1,10 +1,10 @@
 # ULink CLI
 
-CLI tool for verifying universal links (iOS) and app links (Android) configuration for ULink projects.
+CLI tool for verifying and managing universal links (iOS) and app links (Android) configuration for ULink projects.
 
 ## Installation
 
-### Quick Install
+### Quick Install (Recommended)
 
 **macOS / Linux:**
 ```bash
@@ -31,75 +31,187 @@ curl -fsSL https://ulink.ly/install.sh | bash -s -- --version v1.0.0
 ### For Dart Developers
 
 ```bash
-dart pub global activate --source git https://github.com/FlywheelStudio/ulink_cli.git
+dart pub global activate --source git https://github.com/mohn93/ulink_cli.git
 ```
 
 ### Manual Download
 
-Download binaries directly from [GitHub Releases](https://github.com/FlywheelStudio/ulink_cli/releases).
+Download binaries directly from [GitHub Releases](https://github.com/mohn93/ulink_cli/releases).
 
-## Usage
-
-### Verify Configuration
+## Quick Start
 
 ```bash
-ulink verify --project-id <project-id> --api-key <api-key> [--path <project-path>]
+# 1. Login to your ULink account
+ulink login
+
+# 2. Navigate to your project directory
+cd /path/to/your/app
+
+# 3. Link to your ULink project
+ulink project set
+
+# 4. Verify your configuration
+ulink verify
 ```
 
-### Interactive Fix Mode
+## Commands
+
+### `ulink login`
+
+Authenticate with your ULink account. Supports three authentication methods:
 
 ```bash
-ulink fix --project-id <project-id> --api-key <api-key> [--path <project-path>]
+# Browser-based login (default, recommended)
+ulink login
+
+# Email/password login
+ulink login --password
+
+# API key login
+ulink login --api-key
 ```
 
-## Options
+### `ulink logout`
 
-- `--project-id, -p`: ULink project ID
-- `--api-key, -k`: ULink API key
-- `--base-url, -u`: ULink API base URL (default: https://api.ulink.ly)
-- `--path, -p`: Project path (default: current directory)
-- `--verbose, -v`: Verbose output
-- `--interactive, -i`: Interactive mode
+Clear stored credentials:
 
-## What It Checks
+```bash
+ulink logout
+```
 
-1. **SDK Package Installation**
-   - Flutter: Checks `pubspec.yaml` for `flutter_ulink_sdk`
-   - Android: Checks `build.gradle` for `ly.ulink:ulink-sdk`
-   - iOS: Checks `Podfile` or `Package.swift` for `ULinkSDK`
+### `ulink project set`
 
-2. **Local Configuration Files**
-   - iOS: `Info.plist`, entitlements file
-   - Android: `AndroidManifest.xml`
-   - Flutter: Both iOS and Android configurations
+Link the current directory to a ULink project:
 
-3. **ULink Project Configuration**
-   - Fetches project configuration from ULink API
-   - Cross-references with local configuration
+```bash
+# Interactive project selection
+ulink project set
 
-4. **Well-Known Files**
-   - Tests AASA file accessibility and validity (iOS)
-   - Tests Asset Links JSON file accessibility and validity (Android)
+# Set project by slug directly
+ulink project set --slug my-project
 
-5. **Runtime Tests** (optional)
-   - iOS: Tests universal link opening in simulator
-   - Android: Checks app links verification status via ADB
+# Set for a specific path
+ulink project set --path ./my-app
+```
+
+### `ulink project show`
+
+Show the currently linked project for a directory:
+
+```bash
+ulink project show
+
+# For a specific path
+ulink project show --path ./my-app
+```
+
+### `ulink verify`
+
+Verify your project's deep link configuration:
+
+```bash
+# Verify current directory
+ulink verify
+
+# Verify specific path
+ulink verify --path ./my-app
+
+# Verbose output
+ulink verify -v
+```
+
+### `ulink fix`
+
+Interactive mode to fix configuration issues:
+
+```bash
+# Fix issues in current directory
+ulink fix
+
+# Fix issues in specific path
+ulink fix --path ./my-app
+```
+
+### `ulink version`
+
+Show version information:
+
+```bash
+ulink version
+# or
+ulink --version
+```
+
+## Global Options
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--verbose` | `-v` | Enable verbose output |
+| `--interactive` | `-i` | Enable interactive mode |
+| `--api-url` | | Override API base URL (for development) |
+| `--help` | `-h` | Show help message |
+| `--version` | `-V` | Show version information |
+
+## What It Verifies
+
+### 1. SDK Package Installation
+- **Flutter**: Checks `pubspec.yaml` for `flutter_ulink_sdk`
+- **Android**: Checks `build.gradle` for `ly.ulink:ulink-sdk`
+- **iOS**: Checks `Podfile` or `Package.swift` for `ULinkSDK`
+
+### 2. Local Configuration Files
+- **iOS**: `Info.plist`, entitlements file (Associated Domains, URL Types)
+- **Android**: `AndroidManifest.xml` (intent filters, App Links)
+- **Flutter**: Both iOS and Android configurations
+
+### 3. ULink Project Configuration
+- Fetches project configuration from ULink API
+- Cross-references with local configuration
+- Validates bundle IDs, package names, and domains
+
+### 4. Well-Known Files
+- **iOS**: Tests AASA (Apple App Site Association) file accessibility and validity
+- **Android**: Tests Asset Links JSON file accessibility and validity
+
+### 5. Runtime Tests (Optional)
+- **iOS**: Tests universal link opening in simulator
+- **Android**: Checks app links verification status via ADB
 
 ## Requirements
 
-- Dart SDK 3.6.2 or higher
 - For iOS testing: Xcode with `xcrun simctl`
 - For Android testing: Android SDK with `adb` in PATH
 
 ## Examples
 
 ```bash
-# Verify Flutter project
-ulink verify -p my-project-id -k my-api-key
+# Full workflow for a Flutter project
+ulink login
+cd ~/projects/my-flutter-app
+ulink project set --slug my-app
+ulink verify -v
 
-# Verify iOS project
-ulink verify -p my-project-id -k my-api-key --path ./ios
+# Verify iOS-only project
+cd ~/projects/my-ios-app
+ulink project set
+ulink verify --path ./ios
 
-# Verify with verbose output
-ulink verify -p my-project-id -k my-api-key -v
+# Fix configuration issues interactively
+ulink fix -v
 ```
+
+## Troubleshooting
+
+### "Not authenticated" error
+Run `ulink login` to authenticate with your ULink account.
+
+### "No project linked" error
+Run `ulink project set` to link your directory to a ULink project.
+
+### Verification failures
+Run `ulink verify -v` for verbose output to see detailed error messages.
+
+## Support
+
+- Documentation: [https://ulink.ly/docs](https://ulink.ly/docs)
+- Issues: [GitHub Issues](https://github.com/mohn93/ulink_cli/issues)

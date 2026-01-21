@@ -1,65 +1,72 @@
 # Installing ULink CLI
 
-## Option 1: Install to /usr/local/bin (Recommended)
+## Quick Install (Recommended)
 
-This makes the CLI available system-wide:
+### macOS / Linux
 
 ```bash
-cd ulink_cli
-sudo cp ulink /usr/local/bin/
-sudo chmod +x /usr/local/bin/ulink
+curl -fsSL https://ulink.ly/install.sh | bash
 ```
 
-Then you can use it from anywhere:
-```bash
-ulink login
-ulink verify
+### Windows (PowerShell)
+
+```powershell
+irm https://ulink.ly/install.ps1 | iex
 ```
 
-## Option 2: Install to ~/bin (User-specific)
+The install script will:
+- Download the latest release for your platform
+- Install to `~/.ulink/bin`
+- Add the binary to your PATH
 
-If you prefer not to use sudo:
+## Install Specific Version
+
+### macOS / Linux
 
 ```bash
-# Create ~/bin if it doesn't exist
-mkdir -p ~/bin
-
-# Copy the executable
-cp ulink_cli/ulink ~/bin/
-
-# Make it executable
-chmod +x ~/bin/ulink
-
-# Add ~/bin to PATH (add this to your ~/.zshrc or ~/.bash_profile)
-echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
-
-# Reload your shell
-source ~/.zshrc
+curl -fsSL https://ulink.ly/install.sh | bash -s -- --version v1.0.0
 ```
 
-## Option 3: Add Current Directory to PATH
+### Windows
 
-If you want to keep the executable in the project directory:
-
-```bash
-# Add to ~/.zshrc (for zsh) or ~/.bash_profile (for bash)
-echo 'export PATH="$PATH:/Users/mohn93/Desktop/all_ulink/ulink_cli"' >> ~/.zshrc
-
-# Reload your shell
-source ~/.zshrc
+```powershell
+& ([scriptblock]::Create((irm https://ulink.ly/install.ps1))) -Version v1.0.0
 ```
 
-## Option 4: Create a Symlink
+## CI/CD Installation
 
-Create a symlink in a directory already in your PATH:
+For CI environments, use the `--ci` flag to skip interactive prompts:
 
 ```bash
-# For /usr/local/bin (requires sudo)
-sudo ln -s /Users/mohn93/Desktop/all_ulink/ulink_cli/ulink /usr/local/bin/ulink
+curl -fsSL https://ulink.ly/install.sh | bash -s -- --ci
+```
 
-# Or for ~/bin (no sudo needed)
-mkdir -p ~/bin
-ln -s /Users/mohn93/Desktop/all_ulink/ulink_cli/ulink ~/bin/ulink
+## Manual Installation
+
+### Download from GitHub Releases
+
+1. Go to [GitHub Releases](https://github.com/mohn93/ulink_cli/releases)
+2. Download the appropriate binary for your platform:
+   - `ulink-macos-arm64` - macOS Apple Silicon
+   - `ulink-macos-x64` - macOS Intel
+   - `ulink-linux-x64` - Linux x64
+   - `ulink-linux-arm64` - Linux ARM64
+   - `ulink-windows-x64.exe` - Windows x64
+3. Make it executable (macOS/Linux):
+   ```bash
+   chmod +x ulink-*
+   ```
+4. Move to a directory in your PATH:
+   ```bash
+   sudo mv ulink-* /usr/local/bin/ulink
+   ```
+
+### For Dart Developers
+
+If you have Dart SDK installed:
+
+```bash
+dart pub global activate --source git https://github.com/mohn93/ulink_cli.git
 ```
 
 ## Verify Installation
@@ -67,22 +74,46 @@ ln -s /Users/mohn93/Desktop/all_ulink/ulink_cli/ulink ~/bin/ulink
 After installation, verify it works:
 
 ```bash
-ulink --help
+ulink --version
 ```
 
-You should see the help message with all available commands.
+You should see version information like:
+```
+ULink CLI Version: 1.0.0
+Build Number: 37
+Build Date: 2026-01-21
+```
+
+## Updating
+
+To update to the latest version, simply run the install script again:
+
+```bash
+# macOS / Linux
+curl -fsSL https://ulink.ly/install.sh | bash
+
+# Windows
+irm https://ulink.ly/install.ps1 | iex
+```
 
 ## Uninstall
 
-To remove the CLI:
+### If installed via script
 
 ```bash
-# If installed to /usr/local/bin
+rm -rf ~/.ulink
+```
+
+Then remove the PATH entry from your shell config (`~/.zshrc`, `~/.bashrc`, etc.).
+
+### If installed manually
+
+```bash
 sudo rm /usr/local/bin/ulink
+```
 
-# If installed to ~/bin
-rm ~/bin/ulink
+### If installed via Dart
 
-# If using symlink
-rm /usr/local/bin/ulink  # or ~/bin/ulink
+```bash
+dart pub global deactivate ulink_cli
 ```
