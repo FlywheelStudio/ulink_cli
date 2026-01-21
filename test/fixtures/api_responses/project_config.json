@@ -1,0 +1,25 @@
+{
+  "projectId": "test-project-123",
+  "ios_bundle_identifier": "com.example.testapp",
+  "ios_team_id": "ABC123DEFG",
+  "ios_deeplink_schema": "testapp://",
+  "android_package_name": "com.example.testapp",
+  "android_sha256_fingerprints": [
+    "AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99"
+  ],
+  "android_deeplink_schema": "testapp://",
+  "domains": [
+    {
+      "id": "domain-1",
+      "host": "example.com",
+      "status": "verified",
+      "isPrimary": true
+    },
+    {
+      "id": "domain-2",
+      "host": "test.example.com",
+      "status": "pending",
+      "isPrimary": false
+    }
+  ]
+}

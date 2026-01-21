@@ -1,0 +1,39 @@
+# Dart
+.dart_tool/
+.packages
+.pub/
+build/
+*.dart.js
+*.dart.js.map
+*.info.json
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compiled executable
+ulink
+
+# Per-directory project configuration (created by CLI)
+.ulink/
+
+# Auth/credentials (never commit)
+.auth/
+*.pem
+*.key
+credentials.json
+
+# Distribution artifacts
+dist/
+*.tar.gz
+*.zip
+
+# Coverage
+coverage/

@@ -1,0 +1,27 @@
+{
+  "unauthorized": {
+    "error": "Unauthorized",
+    "message": "Invalid or expired token",
+    "statusCode": 401
+  },
+  "forbidden": {
+    "error": "Forbidden",
+    "message": "You do not have access to this project",
+    "statusCode": 403
+  },
+  "notFound": {
+    "error": "Not Found",
+    "message": "Project not found",
+    "statusCode": 404
+  },
+  "serverError": {
+    "error": "Internal Server Error",
+    "message": "An unexpected error occurred",
+    "statusCode": 500
+  },
+  "rateLimited": {
+    "error": "Too Many Requests",
+    "message": "Rate limit exceeded. Please try again later.",
+    "statusCode": 429
+  }
+}
