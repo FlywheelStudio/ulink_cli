@@ -342,5 +342,54 @@ void main() {
         expect(result, isNull);
       });
     });
+
+    group('findAllEntitlements', () {
+      test('should find all entitlements files in iOS project', () async {
+        // Create multiple targets
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/MyApp.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+        await TestHelpers.createFile(
+          tempDir,
+          'MyAppFree/MyAppFree.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        final result = ProjectDetector.findAllEntitlements(
+          tempDir.path,
+          ProjectType.ios,
+        );
+
+        expect(result.length, 2);
+        expect(result.any((f) => f.path.contains('MyApp.entitlements')), isTrue);
+        expect(result.any((f) => f.path.contains('MyAppFree.entitlements')), isTrue);
+      });
+
+      test('should return single entitlements for Flutter project', () async {
+        await TestHelpers.createIosProjectStructure(
+          tempDir,
+          associatedDomains: ['example.com'],
+        );
+
+        final result = ProjectDetector.findAllEntitlements(
+          tempDir.path,
+          ProjectType.flutter,
+        );
+
+        expect(result.length, 1);
+        expect(result.first.path, contains('Runner.entitlements'));
+      });
+
+      test('should return empty list when no entitlements exist', () async {
+        final result = ProjectDetector.findAllEntitlements(
+          tempDir.path,
+          ProjectType.ios,
+        );
+
+        expect(result, isEmpty);
+      });
+    });
   });
 }

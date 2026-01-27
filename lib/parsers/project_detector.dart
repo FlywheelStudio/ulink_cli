@@ -91,6 +91,34 @@ class ProjectDetector {
     return null;
   }
 
+  /// Find all entitlements files for iOS/Flutter projects
+  static List<File> findAllEntitlements(String projectPath, ProjectType projectType) {
+    final entitlements = <File>[];
+
+    if (projectType == ProjectType.flutter) {
+      // Flutter has a single well-known location
+      final flutterEntitlements = File(
+        path.join(projectPath, 'ios', 'Runner', 'Runner.entitlements'),
+      );
+      if (flutterEntitlements.existsSync()) {
+        entitlements.add(flutterEntitlements);
+      }
+    } else if (projectType == ProjectType.ios) {
+      // Search for all .entitlements files
+      final dir = Directory(projectPath);
+      if (dir.existsSync()) {
+        final files = dir.listSync(recursive: true).whereType<File>();
+        for (final file in files) {
+          if (file.path.endsWith('.entitlements')) {
+            entitlements.add(file);
+          }
+        }
+      }
+    }
+
+    return entitlements;
+  }
+
   /// Find AndroidManifest.xml for Android/Flutter projects
   static File? findAndroidManifest(
     String projectPath,
