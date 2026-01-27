@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:path/path.dart' as path;
 import '../models/platform_config.dart';
+import '../models/target_info.dart';
+import 'ios_parser.dart';
 
 /// Detects project type and finds configuration files
 class ProjectDetector {
@@ -284,5 +286,57 @@ class ProjectDetector {
     }
 
     return null;
+  }
+
+  /// Discover iOS target by bundle ID
+  /// Returns all discovered targets plus the one matching the requested bundle ID
+  static TargetDiscoveryResult discoverTargetByBundleId(
+    String projectPath,
+    ProjectType projectType,
+    String? targetBundleId,
+  ) {
+    final allEntitlements = findAllEntitlements(projectPath, projectType);
+    final allTargets = <TargetInfo>[];
+    TargetInfo? matchedTarget;
+
+    for (final entitlementsFile in allEntitlements) {
+      final infoPlist = findInfoPlistForEntitlements(entitlementsFile);
+      if (infoPlist == null) {
+        // Skip entitlements without associated Info.plist
+        continue;
+      }
+
+      // Parse bundle ID from Info.plist
+      final config = IosParser.parseInfoPlist(infoPlist);
+      if (config == null || config.bundleIdentifier == null) {
+        continue;
+      }
+
+      // Derive target name from parent folder of entitlements file
+      final targetName = path.basename(entitlementsFile.parent.path);
+
+      final target = TargetInfo(
+        entitlementsFile: entitlementsFile,
+        infoPlistFile: infoPlist,
+        bundleId: config.bundleIdentifier!,
+        targetName: targetName,
+      );
+
+      allTargets.add(target);
+
+      // Check if this matches the requested bundle ID
+      if (targetBundleId == null) {
+        // No specific bundle ID requested, match first target
+        matchedTarget ??= target;
+      } else if (config.bundleIdentifier == targetBundleId) {
+        matchedTarget = target;
+      }
+    }
+
+    return TargetDiscoveryResult(
+      matchedTarget: matchedTarget,
+      allTargets: allTargets,
+      requestedBundleId: targetBundleId,
+    );
   }
 }

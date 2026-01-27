@@ -463,5 +463,156 @@ void main() {
         expect(result, isNull);
       });
     });
+
+    group('discoverTargetByBundleId', () {
+      test('should match target by bundle ID', () async {
+        // Create two targets
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/Info.plist',
+          '''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.myapp</string>
+</dict>
+</plist>''',
+        );
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/MyApp.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        await TestHelpers.createFile(
+          tempDir,
+          'MyAppFree/Info.plist',
+          '''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.myappfree</string>
+</dict>
+</plist>''',
+        );
+        await TestHelpers.createFile(
+          tempDir,
+          'MyAppFree/MyAppFree.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        final result = ProjectDetector.discoverTargetByBundleId(
+          tempDir.path,
+          ProjectType.ios,
+          'com.example.myappfree',
+        );
+
+        expect(result.hasMatch, isTrue);
+        expect(result.matchedTarget!.bundleId, 'com.example.myappfree');
+        expect(result.matchedTarget!.targetName, 'MyAppFree');
+        expect(result.allTargets.length, 2);
+      });
+
+      test('should return all targets when no bundle ID provided', () async {
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/Info.plist',
+          '''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.myapp</string>
+</dict>
+</plist>''',
+        );
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/MyApp.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        final result = ProjectDetector.discoverTargetByBundleId(
+          tempDir.path,
+          ProjectType.ios,
+          null,
+        );
+
+        expect(result.hasMatch, isTrue);
+        expect(result.matchedTarget!.bundleId, 'com.example.myapp');
+        expect(result.allTargets.length, 1);
+      });
+
+      test('should return no match when bundle ID not found', () async {
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/Info.plist',
+          '''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.myapp</string>
+</dict>
+</plist>''',
+        );
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/MyApp.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        final result = ProjectDetector.discoverTargetByBundleId(
+          tempDir.path,
+          ProjectType.ios,
+          'com.example.different',
+        );
+
+        expect(result.hasMatch, isFalse);
+        expect(result.allTargets.length, 1);
+        expect(result.requestedBundleId, 'com.example.different');
+      });
+
+      test('should derive target name from parent folder', () async {
+        await TestHelpers.createFile(
+          tempDir,
+          'MyAwesomeApp/Info.plist',
+          '''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.app</string>
+</dict>
+</plist>''',
+        );
+        await TestHelpers.createFile(
+          tempDir,
+          'MyAwesomeApp/MyAwesomeApp.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        final result = ProjectDetector.discoverTargetByBundleId(
+          tempDir.path,
+          ProjectType.ios,
+          'com.example.app',
+        );
+
+        expect(result.matchedTarget!.targetName, 'MyAwesomeApp');
+      });
+
+      test('should return empty targets when no entitlements found', () async {
+        final result = ProjectDetector.discoverTargetByBundleId(
+          tempDir.path,
+          ProjectType.ios,
+          'com.example.app',
+        );
+
+        expect(result.hasMatch, isFalse);
+        expect(result.allTargets, isEmpty);
+      });
+    });
   });
 }
