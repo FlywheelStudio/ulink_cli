@@ -76,53 +76,66 @@ class IosValidator {
       }
     }
 
-    // Check entitlements
-    final entitlements = ProjectDetector.findEntitlements(
-      projectPath,
-      platformConfig?.projectType ?? ProjectType.ios,
-    );
-
-    if (entitlements == null) {
+    // Check associated domains from platformConfig (already parsed from correct target)
+    // This avoids re-parsing entitlements which could pick up the wrong file in multi-target projects
+    if (platformConfig != null && platformConfig.associatedDomains.isNotEmpty) {
       results.add(
         VerificationResult(
-          checkName: 'iOS Entitlements',
-          status: VerificationStatus.warning,
-          message: 'Entitlements file not found',
-          fixSuggestion:
-              'Create an entitlements file and add com.apple.developer.associated-domains',
+          checkName: 'iOS Associated Domains',
+          status: VerificationStatus.success,
+          message:
+              'Associated domains found: ${platformConfig.associatedDomains.join(", ")}',
         ),
       );
     } else {
-      results.add(
-        VerificationResult(
-          checkName: 'iOS Entitlements',
-          status: VerificationStatus.success,
-          message: 'Entitlements file found',
-          details: {'path': entitlements.path},
-        ),
+      // Fallback: try to find and parse entitlements file directly
+      final entitlements = ProjectDetector.findEntitlements(
+        projectPath,
+        platformConfig?.projectType ?? ProjectType.ios,
       );
 
-      // Check associated domains
-      final associatedDomains = IosParser.parseEntitlements(entitlements);
-      if (associatedDomains.isEmpty) {
+      if (entitlements == null) {
         results.add(
           VerificationResult(
-            checkName: 'iOS Associated Domains',
-            status: VerificationStatus.error,
-            message: 'No associated domains found in entitlements',
+            checkName: 'iOS Entitlements',
+            status: VerificationStatus.warning,
+            message: 'Entitlements file not found',
             fixSuggestion:
-                'Add com.apple.developer.associated-domains array to entitlements file',
+                'Create an entitlements file and add com.apple.developer.associated-domains',
           ),
         );
       } else {
         results.add(
           VerificationResult(
-            checkName: 'iOS Associated Domains',
+            checkName: 'iOS Entitlements',
             status: VerificationStatus.success,
-            message:
-                'Associated domains found: ${associatedDomains.join(", ")}',
+            message: 'Entitlements file found',
+            details: {'path': entitlements.path},
           ),
         );
+
+        // Check associated domains
+        final associatedDomains = IosParser.parseEntitlements(entitlements);
+        if (associatedDomains.isEmpty) {
+          results.add(
+            VerificationResult(
+              checkName: 'iOS Associated Domains',
+              status: VerificationStatus.error,
+              message: 'No associated domains found in entitlements',
+              fixSuggestion:
+                  'Add com.apple.developer.associated-domains array to entitlements file',
+            ),
+          );
+        } else {
+          results.add(
+            VerificationResult(
+              checkName: 'iOS Associated Domains',
+              status: VerificationStatus.success,
+              message:
+                  'Associated domains found: ${associatedDomains.join(", ")}',
+            ),
+          );
+        }
       }
     }
 

@@ -120,7 +120,7 @@ void main() {
         expect(entitlementsResult.message, contains('not found'));
       });
 
-      test('should return success when entitlements file found', () async {
+      test('should return success when associated domains in config', () async {
         await TestHelpers.createIosProjectStructure(
           tempDir,
           associatedDomains: ['example.com'],
@@ -135,10 +135,12 @@ void main() {
 
         final results = IosValidator.validate(tempDir.path, config);
 
-        final entitlementsResult = results.firstWhere(
-          (r) => r.checkName == 'iOS Entitlements',
+        // When platformConfig has associatedDomains, validator uses those directly
+        final domainsResult = results.firstWhere(
+          (r) => r.checkName == 'iOS Associated Domains',
         );
-        expect(entitlementsResult.status, VerificationStatus.success);
+        expect(domainsResult.status, VerificationStatus.success);
+        expect(domainsResult.message, contains('example.com'));
       });
 
       test('should return error when no associated domains in entitlements', () async {
