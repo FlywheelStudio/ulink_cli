@@ -3,6 +3,7 @@ import 'package:path/path.dart' as path;
 import '../models/verification_result.dart';
 import '../models/platform_config.dart';
 import '../models/project_config.dart';
+import '../models/target_info.dart';
 import '../parsers/project_detector.dart';
 import '../parsers/ios_parser.dart';
 import '../parsers/android_parser.dart';
@@ -80,19 +81,94 @@ class VerifyCommand {
     if (projectType == ProjectType.flutter) {
       localConfig = FlutterParser.parseFlutterProject(absolutePath);
     } else if (projectType == ProjectType.ios) {
-      final infoPlist = ProjectDetector.findInfoPlist(
+      // For iOS projects, we need to fetch ULink config early to get the bundle ID
+      // for auto target detection
+      String? targetBundleId;
+
+      // Check for credentials early
+      final earlyDirProjectId = ProjectConfigManager.loadProjectId(absolutePath);
+      final earlyConfig = ConfigManager.loadConfig();
+      String? earlyApiKey;
+      final earlyProjectId = earlyDirProjectId;
+
+      if (earlyConfig?.auth?.type == AuthType.apiKey) {
+        earlyApiKey = earlyConfig!.auth!.apiKey;
+      }
+
+      final hasEarlyCredentials = earlyApiKey != null ||
+          (earlyConfig?.auth?.type == AuthType.jwt && earlyConfig!.auth!.token != null);
+
+      // If we have credentials, try to get bundle ID from ULink
+      if (hasEarlyCredentials && earlyProjectId != null) {
+        try {
+          final apiClient = ULinkApiClient(
+            baseUrl: baseUrl,
+            apiKey: earlyApiKey,
+          );
+          final ulinkProjectConfig = await apiClient.getProjectConfig(earlyProjectId);
+          targetBundleId = ulinkProjectConfig.iosBundleIdentifier;
+        } catch (e) {
+          // Continue without ULink bundle ID - will use fallback
+          if (verbose) {
+            print(ConsoleStyle.dim('Could not fetch ULink config for target detection: $e'));
+          }
+        }
+      }
+
+      // Use target discovery
+      final discoveryResult = ProjectDetector.discoverTargetByBundleId(
         absolutePath,
         projectType,
-      );
-      final entitlements = ProjectDetector.findEntitlements(
-        absolutePath,
-        projectType,
+        targetBundleId,
       );
 
-      if (infoPlist != null) {
-        localConfig = IosParser.parseInfoPlist(infoPlist);
-        if (entitlements != null && localConfig != null) {
-          final domains = IosParser.parseEntitlements(entitlements);
+      if (discoveryResult.allTargets.isEmpty) {
+        // No entitlements found at all
+        parseSpinner.warn('No entitlements files found');
+        results.add(
+          VerificationResult(
+            checkName: 'iOS Target Discovery',
+            status: VerificationStatus.warning,
+            message: 'No entitlements files found in project',
+            fixSuggestion: 'Add an entitlements file with com.apple.developer.associated-domains',
+          ),
+        );
+        // Still try to parse Info.plist for other config
+        final infoPlist = ProjectDetector.findInfoPlist(absolutePath, projectType);
+        if (infoPlist != null) {
+          localConfig = IosParser.parseInfoPlist(infoPlist);
+        }
+      } else if (!discoveryResult.hasMatch && targetBundleId != null) {
+        // Found targets but none match the ULink bundle ID
+        parseSpinner.fail('No matching target found');
+        final targetList = discoveryResult.allTargets
+            .map((t) => '  • ${t.targetName} (${t.bundleId})\n    └─ ${t.entitlementsFile.path}')
+            .join('\n');
+        stderr.writeln(ConsoleStyle.error(
+          '\nNo local target matches ULink bundle ID: $targetBundleId\n\n'
+          'Found ${discoveryResult.allTargets.length} target(s) in project:\n$targetList\n\n'
+          'Either update your ULink iOS Bundle Identifier, or ensure the correct\n'
+          'target has an entitlements file with associated domains configured.',
+        ));
+        exit(1);
+      } else {
+        // Found a match (or using first target as fallback)
+        final matchedTarget = discoveryResult.matchedTarget!;
+
+        if (discoveryResult.hasMultipleTargets && targetBundleId == null && !hasEarlyCredentials) {
+          // Multiple targets but no credentials to determine which one
+          print(ConsoleStyle.warning(
+            '\n⚠ Multiple targets found. Using first target: ${matchedTarget.targetName}\n'
+            '  Run "ulink login" for automatic target matching by bundle ID\n',
+          ));
+        } else if (discoveryResult.hasMultipleTargets) {
+          print(ConsoleStyle.success('✓ Matched target: ${matchedTarget.targetName} (${matchedTarget.bundleId})'));
+        }
+
+        // Parse the matched target
+        localConfig = IosParser.parseInfoPlist(matchedTarget.infoPlistFile);
+        if (localConfig != null) {
+          final domains = IosParser.parseEntitlements(matchedTarget.entitlementsFile);
           localConfig = PlatformConfig(
             projectType: localConfig.projectType,
             bundleIdentifier: localConfig.bundleIdentifier,
