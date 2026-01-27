@@ -231,4 +231,58 @@ class ProjectDetector {
     }
     return null;
   }
+
+  /// Find the Info.plist associated with an entitlements file
+  /// Searches: same directory, parent directory, sibling directories, recursive in target folder
+  static File? findInfoPlistForEntitlements(File entitlementsFile) {
+    final entitlementsDir = entitlementsFile.parent;
+
+    // 1. Check same directory
+    final sameDirPlist = File(path.join(entitlementsDir.path, 'Info.plist'));
+    if (sameDirPlist.existsSync()) {
+      return sameDirPlist;
+    }
+
+    // 2. Check parent directory
+    final parentDir = entitlementsDir.parent;
+    final parentPlist = File(path.join(parentDir.path, 'Info.plist'));
+    if (parentPlist.existsSync()) {
+      return parentPlist;
+    }
+
+    // 3. Check sibling directories (one level deep from entitlements directory)
+    if (entitlementsDir.existsSync()) {
+      for (final entity in entitlementsDir.listSync()) {
+        if (entity is Directory) {
+          final siblingPlist = File(path.join(entity.path, 'Info.plist'));
+          if (siblingPlist.existsSync()) {
+            return siblingPlist;
+          }
+        }
+      }
+    }
+
+    // 4. Check sibling directories from parent
+    if (parentDir.existsSync()) {
+      for (final entity in parentDir.listSync()) {
+        if (entity is Directory) {
+          final siblingPlist = File(path.join(entity.path, 'Info.plist'));
+          if (siblingPlist.existsSync()) {
+            return siblingPlist;
+          }
+        }
+      }
+    }
+
+    // 5. Recursive search within target folder (entitlements directory and below)
+    if (entitlementsDir.existsSync()) {
+      for (final entity in entitlementsDir.listSync(recursive: true)) {
+        if (entity is File && entity.path.endsWith('Info.plist')) {
+          return entity;
+        }
+      }
+    }
+
+    return null;
+  }
 }

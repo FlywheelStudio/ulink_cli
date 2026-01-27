@@ -391,5 +391,77 @@ void main() {
         expect(result, isEmpty);
       });
     });
+
+    group('findInfoPlistForEntitlements', () {
+      test('should find Info.plist in same directory as entitlements', () async {
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/Info.plist',
+          '<?xml version="1.0"?><plist><dict><key>CFBundleIdentifier</key><string>com.example.myapp</string></dict></plist>',
+        );
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/MyApp.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        final entitlements = File('${tempDir.path}/MyApp/MyApp.entitlements');
+        final result = ProjectDetector.findInfoPlistForEntitlements(entitlements);
+
+        expect(result, isNotNull);
+        expect(result!.path, contains('Info.plist'));
+      });
+
+      test('should find Info.plist in parent directory', () async {
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/Info.plist',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/Entitlements/MyApp.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        final entitlements = File('${tempDir.path}/MyApp/Entitlements/MyApp.entitlements');
+        final result = ProjectDetector.findInfoPlistForEntitlements(entitlements);
+
+        expect(result, isNotNull);
+        expect(result!.path, contains('Info.plist'));
+      });
+
+      test('should find Info.plist in sibling directory', () async {
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/Resources/Info.plist',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/MyApp.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        final entitlements = File('${tempDir.path}/MyApp/MyApp.entitlements');
+        final result = ProjectDetector.findInfoPlistForEntitlements(entitlements);
+
+        expect(result, isNotNull);
+        expect(result!.path, contains('Info.plist'));
+      });
+
+      test('should return null when no Info.plist found', () async {
+        await TestHelpers.createFile(
+          tempDir,
+          'MyApp/MyApp.entitlements',
+          '<?xml version="1.0"?><plist><dict></dict></plist>',
+        );
+
+        final entitlements = File('${tempDir.path}/MyApp/MyApp.entitlements');
+        final result = ProjectDetector.findInfoPlistForEntitlements(entitlements);
+
+        expect(result, isNull);
+      });
+    });
   });
 }
