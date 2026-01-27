@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:ulink_cli/ulink_cli.dart';
 import 'package:ulink_cli/config/version.dart';
+import 'package:ulink_cli/utils/update_checker.dart';
 
 void main(List<String> args) async {
   final parser = ArgParser()
@@ -65,6 +66,13 @@ void main(List<String> args) async {
   }
 
   final results = parser.parse(args);
+
+  // Check for updates (non-blocking, once per day)
+  // Fire and forget - don't await, let it run in background
+  UpdateChecker.checkForUpdates().ignore();
+
+  // Show cached update message if available (fast, sync check)
+  UpdateChecker.showCachedUpdateMessage();
 
   if ((results['help'] as bool? ?? false) || results.command == null) {
     print('ULink CLI - Universal Links and App Links Verification Tool');
