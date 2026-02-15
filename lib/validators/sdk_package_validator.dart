@@ -230,14 +230,17 @@ class SdkPackageValidator {
   /// Validate iOS SDK installation
   static List<VerificationResult> _validateIos(String projectPath) {
     final results = <VerificationResult>[];
+    bool foundInPods = false;
+    bool foundInSpm = false;
 
-    // Check Podfile first
+    // Check Podfile
     final podfile = ProjectDetector.findPodfile(projectPath, ProjectType.ios);
     if (podfile != null) {
       try {
         final content = podfile.readAsStringSync();
         if (content.contains("pod 'ULinkSDK'") ||
             content.contains('pod "ULinkSDK"')) {
+          foundInPods = true;
           // Check Podfile.lock
           final lockFile = File(projectPath + '/Podfile.lock');
           if (lockFile.existsSync()) {
@@ -270,7 +273,6 @@ class SdkPackageValidator {
               ),
             );
           }
-          return results;
         }
       } catch (e) {
         // Continue to check Package.swift
@@ -288,6 +290,7 @@ class SdkPackageValidator {
         if (content.contains('ULinkSDK') ||
             content.contains('ios_ulink_sdk') ||
             content.contains('github.com') && content.contains('ulink')) {
+          foundInSpm = true;
           results.add(
             VerificationResult(
               checkName: 'SDK Package - iOS (SPM)',
@@ -295,24 +298,25 @@ class SdkPackageValidator {
               message: 'ULinkSDK found in Package.swift',
             ),
           );
-          return results;
         }
       } catch (e) {
         // Continue
       }
     }
 
-    // No SDK found
-    results.add(
-      VerificationResult(
-        checkName: 'SDK Package - iOS',
-        status: VerificationStatus.error,
-        message: 'ULinkSDK not found in Podfile or Package.swift',
-        fixSuggestion: 'Add ULinkSDK to your Podfile:\n'
-            "  pod 'ULinkSDK', '~> 1.0.0'\n"
-            'Or add it via Swift Package Manager in Xcode',
-      ),
-    );
+    // No SDK found in either
+    if (!foundInPods && !foundInSpm) {
+      results.add(
+        VerificationResult(
+          checkName: 'SDK Package - iOS',
+          status: VerificationStatus.error,
+          message: 'ULinkSDK not found in Podfile or Package.swift',
+          fixSuggestion: 'Add ULinkSDK to your Podfile:\n'
+              "  pod 'ULinkSDK', '~> 1.0.0'\n"
+              'Or add it via Swift Package Manager in Xcode',
+        ),
+      );
+    }
 
     return results;
   }
