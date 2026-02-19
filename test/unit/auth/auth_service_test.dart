@@ -143,6 +143,88 @@ void main() {
           isA<Function>(),
         );
       });
+
+      // Note: Full getValidToken tests with HTTP mocking would require
+      // refactoring AuthService to accept an injectable HTTP client.
+      // The following tests verify the refresh decision logic via
+      // isExpired and isExpiringSoon which drive getValidToken behavior.
+    });
+
+    group('proactive refresh decision logic', () {
+      // getValidToken refreshes when (isExpired || isExpiringSoon) && refreshToken != null
+      // These tests verify the conditions that trigger refresh
+
+      test('should need refresh when token is expired with refresh token', () {
+        final auth = AuthConfig(
+          type: AuthType.jwt,
+          token: 'expired-token',
+          refreshToken: 'refresh-token',
+          expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+        );
+
+        final needsRefresh =
+            (auth.isExpired || auth.isExpiringSoon) && auth.refreshToken != null;
+
+        expect(needsRefresh, isTrue);
+        expect(auth.isExpired, isTrue);
+      });
+
+      test('should need refresh when token is expiring soon with refresh token', () {
+        final auth = AuthConfig(
+          type: AuthType.jwt,
+          token: 'soon-expiring-token',
+          refreshToken: 'refresh-token',
+          expiresAt: DateTime.now().add(const Duration(minutes: 3)),
+        );
+
+        final needsRefresh =
+            (auth.isExpired || auth.isExpiringSoon) && auth.refreshToken != null;
+
+        expect(needsRefresh, isTrue);
+        expect(auth.isExpired, isFalse);
+        expect(auth.isExpiringSoon, isTrue);
+      });
+
+      test('should not need refresh when token has plenty of time', () {
+        final auth = AuthConfig(
+          type: AuthType.jwt,
+          token: 'valid-token',
+          refreshToken: 'refresh-token',
+          expiresAt: DateTime.now().add(const Duration(hours: 1)),
+        );
+
+        final needsRefresh =
+            (auth.isExpired || auth.isExpiringSoon) && auth.refreshToken != null;
+
+        expect(needsRefresh, isFalse);
+        expect(auth.isExpired, isFalse);
+        expect(auth.isExpiringSoon, isFalse);
+      });
+
+      test('should not need refresh when no refresh token available', () {
+        final auth = AuthConfig(
+          type: AuthType.jwt,
+          token: 'expired-token',
+          refreshToken: null,
+          expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+        );
+
+        final needsRefresh =
+            (auth.isExpired || auth.isExpiringSoon) && auth.refreshToken != null;
+
+        expect(needsRefresh, isFalse);
+      });
+
+      test('should not need refresh for API key auth', () {
+        final auth = AuthConfig(
+          type: AuthType.apiKey,
+          apiKey: 'api-key',
+        );
+
+        // API keys don't expire
+        expect(auth.isExpired, isFalse);
+        expect(auth.isExpiringSoon, isFalse);
+      });
     });
   });
 }

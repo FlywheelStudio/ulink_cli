@@ -49,6 +49,13 @@ class AuthConfig {
     if (expiresAt == null) return false;
     return DateTime.now().isAfter(expiresAt!);
   }
+
+  /// True if token expires within 5 minutes
+  bool get isExpiringSoon {
+    if (expiresAt == null) return false;
+    return DateTime.now()
+        .isAfter(expiresAt!.subtract(const Duration(minutes: 5)));
+  }
 }
 
 enum AuthType {

@@ -14,15 +14,21 @@ class LoginCommand {
 
   /// Execute login
   Future<void> execute({bool useApiKey = false, bool usePassword = false}) async {
-    // Check if already logged in
+    // Check if already logged in with a valid (non-expired) session
     if (ConfigManager.isLoggedIn()) {
       final config = ConfigManager.loadConfig();
-      if (config?.auth?.type == AuthType.jwt && config!.auth!.user != null) {
-        print('✓ Already logged in as ${config.auth!.user!.email}');
+      final auth = config?.auth;
+
+      // If token is expired, allow re-authentication instead of blocking
+      final isExpired = auth?.type == AuthType.jwt && auth!.isExpired;
+      if (isExpired) {
+        print('⚠ Session expired for ${auth.user?.email ?? 'unknown'}. Re-authenticating...\n');
+      } else if (auth?.type == AuthType.jwt && auth!.user != null) {
+        print('✓ Already logged in as ${auth.user!.email}');
         print(
             'Run "ulink logout" to log out first if you want to login with a different account.');
         return;
-      } else if (config?.auth?.type == AuthType.apiKey) {
+      } else if (auth?.type == AuthType.apiKey) {
         print('✓ Already logged in with API key');
         print(
             'Run "ulink logout" to log out first if you want to login with a different account.');

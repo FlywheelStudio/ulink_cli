@@ -120,7 +120,10 @@ class AuthService {
     return false;
   }
 
-  /// Get valid token, refreshing if needed
+  /// Get valid token, refreshing proactively if expiring soon.
+  ///
+  /// Throws [Exception] with a descriptive message when refresh fails,
+  /// so callers can display actionable guidance to the user.
   static Future<String?> getValidToken({
     String? supabaseUrl,
     String? supabaseAnonKey,
@@ -135,24 +138,37 @@ class AuthService {
     }
 
     if (auth.type == AuthType.jwt) {
-      // Check if token is expired
-      if (auth.isExpired && auth.refreshToken != null) {
-        // Try to refresh
+      // Proactive refresh: refresh if expired OR expiring within 5 minutes
+      if ((auth.isExpired || auth.isExpiringSoon) &&
+          auth.refreshToken != null) {
         if (supabaseUrl != null && supabaseAnonKey != null) {
-          try {
-            final refreshed = await refreshToken(
-              refreshToken: auth.refreshToken!,
-              supabaseUrl: supabaseUrl,
-              supabaseAnonKey: supabaseAnonKey,
-            );
-            await ConfigManager.updateAuth(refreshed);
-            return refreshed.token;
-          } catch (e) {
-            // Refresh failed, return null
-            return null;
+          // Retry once on transient failures
+          Exception? lastError;
+          for (var attempt = 0; attempt < 2; attempt++) {
+            try {
+              final refreshed = await refreshToken(
+                refreshToken: auth.refreshToken!,
+                supabaseUrl: supabaseUrl,
+                supabaseAnonKey: supabaseAnonKey,
+              );
+              await ConfigManager.updateAuth(refreshed);
+              return refreshed.token;
+            } catch (e) {
+              lastError = e is Exception ? e : Exception('$e');
+              if (attempt == 0) continue; // retry once
+            }
           }
+          // Both attempts failed
+          throw Exception(
+            'Session expired and token refresh failed. '
+            'Please run "ulink login" to re-authenticate.\n'
+            'Reason: $lastError',
+          );
         }
-        return null;
+        // No Supabase credentials available for refresh
+        throw Exception(
+          'Session expired. Please run "ulink login" to re-authenticate.',
+        );
       }
 
       return auth.token;

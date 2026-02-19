@@ -117,7 +117,25 @@ void main() {
 
   group('isLoggedIn logic', () {
     // These tests verify the isLoggedIn logic using the underlying CliConfig
-    // without relying on file operations
+    // without relying on file operations.
+    //
+    // The logic mirrors ConfigManager.isLoggedIn():
+    //   - API key with non-null key → logged in
+    //   - JWT with non-expired token → logged in
+    //   - JWT with expired token BUT refresh token present → logged in (can refresh)
+    //   - JWT with expired token and NO refresh token → not logged in
+    //   - null auth → not logged in
+
+    bool simulateIsLoggedIn(CliConfig config) {
+      if (config.auth == null) return false;
+      final auth = config.auth!;
+      if (auth.type == AuthType.apiKey && auth.apiKey != null) return true;
+      if (auth.type == AuthType.jwt && auth.token != null) {
+        if (!auth.isExpired) return true;
+        if (auth.refreshToken != null) return true;
+      }
+      return false;
+    }
 
     test('should consider API key auth as logged in', () {
       final config = CliConfig(
@@ -127,11 +145,7 @@ void main() {
         ),
       );
 
-      final auth = config.auth!;
-
-      // Simulate isLoggedIn logic
-      final isLoggedIn = auth.type == AuthType.apiKey && auth.apiKey != null;
-      expect(isLoggedIn, isTrue);
+      expect(simulateIsLoggedIn(config), isTrue);
     });
 
     test('should consider valid JWT as logged in', () {
@@ -143,31 +157,33 @@ void main() {
         ),
       );
 
-      final auth = config.auth!;
-
-      // Simulate isLoggedIn logic
-      final isLoggedIn = auth.type == AuthType.jwt &&
-                         auth.token != null &&
-                         !auth.isExpired;
-      expect(isLoggedIn, isTrue);
+      expect(simulateIsLoggedIn(config), isTrue);
     });
 
-    test('should not consider expired JWT as logged in', () {
+    test('should not consider expired JWT without refresh token as logged in', () {
       final config = CliConfig(
         auth: AuthConfig(
           type: AuthType.jwt,
           token: 'test-token',
           expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+          refreshToken: null,
         ),
       );
 
-      final auth = config.auth!;
+      expect(simulateIsLoggedIn(config), isFalse);
+    });
 
-      // Simulate isLoggedIn logic
-      final isLoggedIn = auth.type == AuthType.jwt &&
-                         auth.token != null &&
-                         !auth.isExpired;
-      expect(isLoggedIn, isFalse);
+    test('should consider expired JWT with refresh token as logged in', () {
+      final config = CliConfig(
+        auth: AuthConfig(
+          type: AuthType.jwt,
+          token: 'test-token',
+          expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+          refreshToken: 'valid-refresh-token',
+        ),
+      );
+
+      expect(simulateIsLoggedIn(config), isTrue);
     });
 
     test('should not consider null token JWT as logged in', () {
@@ -179,13 +195,20 @@ void main() {
         ),
       );
 
-      final auth = config.auth!;
+      expect(simulateIsLoggedIn(config), isFalse);
+    });
 
-      // Simulate isLoggedIn logic
-      final isLoggedIn = auth.type == AuthType.jwt &&
-                         auth.token != null &&
-                         !auth.isExpired;
-      expect(isLoggedIn, isFalse);
+    test('should not consider null token JWT with refresh token as logged in', () {
+      final config = CliConfig(
+        auth: AuthConfig(
+          type: AuthType.jwt,
+          token: null,
+          refreshToken: 'refresh-token',
+          expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+        ),
+      );
+
+      expect(simulateIsLoggedIn(config), isFalse);
     });
 
     test('should not consider null API key as logged in', () {
@@ -196,11 +219,7 @@ void main() {
         ),
       );
 
-      final auth = config.auth!;
-
-      // Simulate isLoggedIn logic
-      final isLoggedIn = auth.type == AuthType.apiKey && auth.apiKey != null;
-      expect(isLoggedIn, isFalse);
+      expect(simulateIsLoggedIn(config), isFalse);
     });
 
     test('should not consider missing auth as logged in', () {
@@ -208,12 +227,7 @@ void main() {
         auth: null,
       );
 
-      // Simulate isLoggedIn logic
-      final isLoggedIn = config.auth != null &&
-                         (config.auth!.type == AuthType.apiKey
-                           ? config.auth!.apiKey != null
-                           : config.auth!.token != null && !config.auth!.isExpired);
-      expect(isLoggedIn, isFalse);
+      expect(simulateIsLoggedIn(config), isFalse);
     });
   });
 }

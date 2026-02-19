@@ -99,6 +99,7 @@ class ConfigManager {
   }
 
   /// Check if user is logged in
+  /// Returns true if token is valid OR if a refresh token is available
   static bool isLoggedIn() {
     final config = loadConfig();
     if (config?.auth == null) return false;
@@ -109,11 +110,9 @@ class ConfigManager {
     }
 
     if (auth.type == AuthType.jwt && auth.token != null) {
-      // Check if token is expired
-      if (auth.isExpired) {
-        return false;
-      }
-      return true;
+      if (!auth.isExpired) return true;
+      // Token expired but refresh token available — still considered logged in
+      if (auth.refreshToken != null) return true;
     }
 
     return false;

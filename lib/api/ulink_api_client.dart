@@ -9,18 +9,19 @@ import '../models/auth_config.dart';
 /// Client for interacting with ULink API
 class ULinkApiClient {
   final String baseUrl;
-  final String? apiKey;
-  final String? jwtToken;
+  final String? _explicitApiKey;
+  final String? _explicitJwtToken;
 
   ULinkApiClient({
     required this.baseUrl,
     String? apiKey,
     String? jwtToken,
-  })  : apiKey = apiKey ?? _loadApiKeyFromConfig(),
-        jwtToken = jwtToken ?? _loadJwtTokenFromConfig();
+  })  : _explicitApiKey = apiKey,
+        _explicitJwtToken = jwtToken;
 
-  /// Load API key from config if not provided
-  static String? _loadApiKeyFromConfig() {
+  /// Get API key from explicit param or config
+  String? get apiKey {
+    if (_explicitApiKey != null) return _explicitApiKey;
     final config = ConfigManager.loadConfig();
     if (config?.auth?.type == AuthType.apiKey) {
       return config!.auth!.apiKey;
@@ -28,26 +29,15 @@ class ULinkApiClient {
     return null;
   }
 
-  /// Load JWT token from config if not provided
-  static String? _loadJwtTokenFromConfig() {
-    final config = ConfigManager.loadConfig();
-    if (config?.auth?.type == AuthType.jwt) {
-      final auth = config!.auth!;
-      // Check if token is valid and not expired
-      if (AuthService.isTokenValid(auth)) {
-        return auth.token;
-      }
-    }
-    return null;
-  }
-
-  /// Get valid token, refreshing if needed
+  /// Get valid token, refreshing if needed.
+  /// Always attempts async refresh — never uses a stale cached token.
   Future<String?> _getValidToken() async {
-    if (jwtToken != null) {
-      return jwtToken;
+    // If an explicit JWT was passed to the constructor, use it directly
+    if (_explicitJwtToken != null) {
+      return _explicitJwtToken;
     }
 
-    // Try to get from config with refresh
+    // Load from config with async refresh support
     final config = ConfigManager.loadConfig();
     if (config?.auth?.type == AuthType.jwt) {
       final supabaseUrl = config!.supabaseUrl;
@@ -58,20 +48,18 @@ class ULinkApiClient {
           supabaseAnonKey: supabaseAnonKey,
         );
       }
+      // No Supabase credentials — return token as-is if not expired
+      final auth = config.auth!;
+      if (!auth.isExpired) return auth.token;
     }
 
     return null;
   }
 
-  /// Get project configuration
-  Future<ProjectConfig> getProjectConfig(String projectId) async {
-    final url = Uri.parse('$baseUrl/projects/$projectId');
+  /// Build auth headers, throwing if no auth is available
+  Future<Map<String, String>> _authHeaders() async {
     final headers = <String, String>{'Content-Type': 'application/json'};
-
-    // Get valid token (may refresh if needed)
     final token = await _getValidToken();
-
-    // Use JWT token if available, otherwise use API key
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     } else if (apiKey != null) {
@@ -81,12 +69,78 @@ class ULinkApiClient {
         'Authentication required. Please run "ulink login" or provide --api-key.',
       );
     }
+    return headers;
+  }
 
-    final response = await http.get(url, headers: headers);
+  /// Force-refresh the token and return updated auth headers.
+  /// Used when a request returns 401 to retry once with a fresh token.
+  Future<Map<String, String>?> _refreshAndBuildHeaders() async {
+    if (_explicitJwtToken != null || _explicitApiKey != null) return null;
+
+    final config = ConfigManager.loadConfig();
+    if (config?.auth?.type != AuthType.jwt) return null;
+
+    final auth = config!.auth!;
+    if (auth.refreshToken == null) return null;
+
+    final supabaseUrl = config.supabaseUrl;
+    final supabaseAnonKey = config.supabaseAnonKey;
+    if (supabaseUrl == null || supabaseAnonKey == null) return null;
+
+    try {
+      final refreshed = await AuthService.refreshToken(
+        refreshToken: auth.refreshToken!,
+        supabaseUrl: supabaseUrl,
+        supabaseAnonKey: supabaseAnonKey,
+      );
+      await ConfigManager.updateAuth(refreshed);
+      return <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${refreshed.token}',
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Execute a GET request with automatic 401 retry
+  Future<http.Response> _getWithRetry(Uri url, Map<String, String> headers) async {
+    var response = await http.get(url, headers: headers);
+    if (response.statusCode == 401) {
+      final retryHeaders = await _refreshAndBuildHeaders();
+      if (retryHeaders != null) {
+        response = await http.get(url, headers: retryHeaders);
+      }
+    }
+    return response;
+  }
+
+  /// Execute a POST request with automatic 401 retry
+  Future<http.Response> _postWithRetry(
+    Uri url,
+    Map<String, String> headers,
+    String body,
+  ) async {
+    var response = await http.post(url, headers: headers, body: body);
+    if (response.statusCode == 401) {
+      final retryHeaders = await _refreshAndBuildHeaders();
+      if (retryHeaders != null) {
+        response = await http.post(url, headers: retryHeaders, body: body);
+      }
+    }
+    return response;
+  }
+
+  /// Get project configuration
+  Future<ProjectConfig> getProjectConfig(String projectId) async {
+    final url = Uri.parse('$baseUrl/projects/$projectId');
+    final headers = await _authHeaders();
+
+    final response = await _getWithRetry(url, headers);
 
     if (response.statusCode == 401) {
       throw Exception(
-        'Authentication failed. Please check your API key or JWT token.',
+        'Authentication failed. Please run "ulink login" to re-authenticate.',
       );
     } else if (response.statusCode == 403) {
       throw Exception(
@@ -131,27 +185,13 @@ class ULinkApiClient {
   /// Get a project by its slug
   Future<ProjectListItem> getProjectBySlug(String slug) async {
     final url = Uri.parse('$baseUrl/projects/by-slug/$slug');
-    final headers = <String, String>{'Content-Type': 'application/json'};
+    final headers = await _authHeaders();
 
-    // Get valid token (may refresh if needed)
-    final token = await _getValidToken();
-
-    // Use JWT token if available, otherwise use API key
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    } else if (apiKey != null) {
-      headers['x-app-key'] = apiKey!;
-    } else {
-      throw Exception(
-        'Authentication required. Please run "ulink login" or provide --api-key.',
-      );
-    }
-
-    final response = await http.get(url, headers: headers);
+    final response = await _getWithRetry(url, headers);
 
     if (response.statusCode == 401) {
       throw Exception(
-        'Authentication failed. Please check your credentials. Run "ulink login" to re-authenticate.',
+        'Authentication failed. Please run "ulink login" to re-authenticate.',
       );
     } else if (response.statusCode == 403) {
       throw Exception(
@@ -174,27 +214,13 @@ class ULinkApiClient {
   /// Get all projects for the authenticated user
   Future<List<ProjectListItem>> getProjects() async {
     final url = Uri.parse('$baseUrl/projects');
-    final headers = <String, String>{'Content-Type': 'application/json'};
+    final headers = await _authHeaders();
 
-    // Get valid token (may refresh if needed)
-    final token = await _getValidToken();
-
-    // Use JWT token if available, otherwise use API key
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    } else if (apiKey != null) {
-      headers['x-app-key'] = apiKey!;
-    } else {
-      throw Exception(
-        'Authentication required. Please run "ulink login" or provide --api-key.',
-      );
-    }
-
-    final response = await http.get(url, headers: headers);
+    final response = await _getWithRetry(url, headers);
 
     if (response.statusCode == 401) {
       throw Exception(
-        'Authentication failed. Please check your credentials. Run "ulink login" to re-authenticate.',
+        'Authentication failed. Please run "ulink login" to re-authenticate.',
       );
     } else if (response.statusCode == 403) {
       throw Exception(
@@ -232,22 +258,17 @@ class ULinkApiClient {
   /// Get project domains
   Future<List<DomainConfig>> getProjectDomains(String projectId) async {
     final url = Uri.parse('$baseUrl/domains/projects/$projectId');
-    final headers = <String, String>{'Content-Type': 'application/json'};
 
-    // Get valid token (may refresh if needed)
-    final token = await _getValidToken();
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    } else if (apiKey != null) {
-      headers['x-app-key'] = apiKey!;
-    } else {
+    Map<String, String> headers;
+    try {
+      headers = await _authHeaders();
+    } catch (_) {
       // For domains, return empty list instead of throwing
       return [];
     }
 
     try {
-      final response = await http.get(url, headers: headers);
+      final response = await _getWithRetry(url, headers);
 
       if (response.statusCode == 200) {
         final body = response.body;
@@ -281,7 +302,7 @@ class ULinkApiClient {
         }).toList();
       } else if (response.statusCode == 401) {
         throw Exception(
-          'Authentication failed. Please check your credentials.',
+          'Authentication failed. Please run "ulink login" to re-authenticate.',
         );
       } else if (response.statusCode == 403) {
         throw Exception(
@@ -321,31 +342,17 @@ class ULinkApiClient {
     Map<String, dynamic> verificationReport,
   ) async {
     final url = Uri.parse('$baseUrl/projects/$projectId/onboarding/cli-verification');
-    final headers = <String, String>{'Content-Type': 'application/json'};
+    final headers = await _authHeaders();
 
-    // Get valid token (may refresh if needed)
-    final token = await _getValidToken();
-
-    // Use JWT token if available, otherwise use API key
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    } else if (apiKey != null) {
-      headers['x-app-key'] = apiKey!;
-    } else {
-      throw Exception(
-        'Authentication required to upload verification results.',
-      );
-    }
-
-    final response = await http.post(
+    final response = await _postWithRetry(
       url,
-      headers: headers,
-      body: jsonEncode(verificationReport),
+      headers,
+      jsonEncode(verificationReport),
     );
 
     if (response.statusCode == 401) {
       throw Exception(
-        'Authentication failed. Please check your credentials.',
+        'Authentication failed. Please run "ulink login" to re-authenticate.',
       );
     } else if (response.statusCode == 403) {
       throw Exception(
