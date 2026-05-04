@@ -2,6 +2,16 @@
 
 CLI tool for verifying and managing universal links (iOS) and app links (Android) configuration for ULink projects.
 
+## AI-Assisted Setup (Recommended)
+
+If you use Claude Code, Cursor, Codex, or another AI coding agent, the easiest way to use the ULink CLI is to let your AI agent drive it. Install the ULink onboarding skill in one command:
+
+```bash
+npx skills add https://ulink.ly
+```
+
+Then ask your agent to **"setup ulink"** — it'll install this CLI for you, run `ulink verify` against your project, and walk you through any failures. Works with 50+ AI agents via the [open agent-skills CLI](https://github.com/vercel-labs/skills). [Learn more →](https://docs.ulink.ly/getting-started/ai-setup)
+
 ## Installation
 
 ### Quick Install (Recommended)
