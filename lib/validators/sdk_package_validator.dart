@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:yaml/yaml.dart';
 import '../models/verification_result.dart';
@@ -19,6 +20,8 @@ class SdkPackageValidator {
       results.addAll(_validateAndroid(projectPath));
     } else if (projectType == ProjectType.ios) {
       results.addAll(_validateIos(projectPath));
+    } else if (projectType == ProjectType.reactNative) {
+      results.addAll(_validateReactNative(projectPath));
     }
 
     return results;
@@ -314,6 +317,108 @@ class SdkPackageValidator {
           fixSuggestion: 'Add ULinkSDK to your Podfile:\n'
               "  pod 'ULinkSDK', '~> 1.0.0'\n"
               'Or add it via Swift Package Manager in Xcode',
+        ),
+      );
+    }
+
+    return results;
+  }
+
+  /// Validate React Native / Expo SDK installation
+  static List<VerificationResult> _validateReactNative(String projectPath) {
+    final results = <VerificationResult>[];
+    final pkgFile = File('$projectPath/package.json');
+
+    if (!pkgFile.existsSync()) {
+      results.add(
+        VerificationResult(
+          checkName: 'SDK Package - React Native',
+          status: VerificationStatus.error,
+          message: 'package.json not found',
+          fixSuggestion:
+              'Ensure you are running the command from a React Native project root',
+        ),
+      );
+      return results;
+    }
+
+    try {
+      final pkg = jsonDecode(pkgFile.readAsStringSync()) as Map<String, dynamic>;
+      final deps = <String, dynamic>{
+        ...?(pkg['dependencies'] as Map?)?.cast<String, dynamic>(),
+        ...?(pkg['devDependencies'] as Map?)?.cast<String, dynamic>(),
+      };
+
+      if (!deps.containsKey('@ulinkly/react-native')) {
+        results.add(
+          VerificationResult(
+            checkName: 'SDK Package - React Native',
+            status: VerificationStatus.error,
+            message: '@ulinkly/react-native not found in package.json',
+            fixSuggestion:
+                'Install it:\n  npx expo install @ulinkly/react-native\n'
+                '(bare React Native: npm install @ulinkly/react-native)',
+          ),
+        );
+        return results;
+      }
+
+      // Confirm it is actually installed (resolved into node_modules)
+      final installed = Directory(
+        '$projectPath/node_modules/@ulinkly/react-native',
+      ).existsSync();
+      if (installed) {
+        results.add(
+          VerificationResult(
+            checkName: 'SDK Package - React Native',
+            status: VerificationStatus.success,
+            message: '@ulinkly/react-native is installed',
+          ),
+        );
+      } else {
+        results.add(
+          VerificationResult(
+            checkName: 'SDK Package - React Native',
+            status: VerificationStatus.warning,
+            message:
+                '@ulinkly/react-native is in package.json but not installed',
+            fixSuggestion: 'Run: npm install (or yarn / pnpm install)',
+          ),
+        );
+      }
+
+      // Check the Expo config plugin (managed/dev-client/prebuild workflow)
+      final appJson = File('$projectPath/app.json');
+      if (appJson.existsSync()) {
+        final content = appJson.readAsStringSync();
+        if (content.contains('@ulinkly/react-native')) {
+          results.add(
+            VerificationResult(
+              checkName: 'Expo Config Plugin',
+              status: VerificationStatus.success,
+              message: 'ULink config plugin found in app.json',
+            ),
+          );
+        } else {
+          results.add(
+            VerificationResult(
+              checkName: 'Expo Config Plugin',
+              status: VerificationStatus.warning,
+              message: 'ULink config plugin not found in app.json',
+              fixSuggestion:
+                  'Add the plugin to expo.plugins, then run npx expo prebuild:\n'
+                  '  ["@ulinkly/react-native", { "scheme": "yourapp", "domains": ["yourapp.shared.ly"] }]\n'
+                  '(skip this if you configure native files manually in bare React Native)',
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      results.add(
+        VerificationResult(
+          checkName: 'SDK Package - React Native',
+          status: VerificationStatus.error,
+          message: 'Error parsing package.json: $e',
         ),
       );
     }

@@ -2,6 +2,15 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **React Native / Expo project support** in `ulink verify`:
+  - Auto-detects React Native / Expo projects (`package.json` with `react-native` / `expo`)
+  - Validates the `@ulinkly/react-native` package is installed
+  - Checks for the Expo config plugin in `app.json`
+  - Verifies iOS + Android native config when present (bare RN or after `expo prebuild`); reports plugin-managed config for managed Expo projects
+
 ## [1.0.0] - 2026-01-21
 
 ### Features

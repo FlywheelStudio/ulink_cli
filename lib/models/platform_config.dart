@@ -27,4 +27,4 @@ class PlatformConfig {
 }
 
 /// Project type enumeration
-enum ProjectType { flutter, ios, android, unknown }
+enum ProjectType { flutter, ios, android, reactNative, unknown }
