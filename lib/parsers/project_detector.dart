@@ -19,6 +19,23 @@ class ProjectDetector {
       return ProjectType.flutter;
     }
 
+    // Check for React Native / Expo project (package.json, no pubspec).
+    // Checked before iOS/Android because RN projects also contain ios/ and
+    // android/ directories that would otherwise match those detectors.
+    final packageJsonFile = File(path.join(projectPath, 'package.json'));
+    if (packageJsonFile.existsSync()) {
+      try {
+        final pkg = packageJsonFile.readAsStringSync();
+        if (pkg.contains('"react-native"') ||
+            pkg.contains('"expo"') ||
+            pkg.contains('@ulinkly/react-native')) {
+          return ProjectType.reactNative;
+        }
+      } catch (_) {
+        // Fall through to the other detectors
+      }
+    }
+
     // Check for iOS project
     final iosDir = Directory(path.join(projectPath, 'ios'));
     final xcodeprojFiles = Directory(projectPath)
@@ -66,6 +83,21 @@ class ProjectDetector {
           return file;
         }
       }
+    } else if (projectType == ProjectType.reactNative) {
+      // React Native: the app Info.plist lives under ios/<App>/Info.plist.
+      // Scope the search to ios/ and skip Pods/build/test outputs.
+      final iosDir = Directory(path.join(projectPath, 'ios'));
+      if (iosDir.existsSync()) {
+        for (final file in iosDir.listSync(recursive: true).whereType<File>()) {
+          if (file.path.endsWith('Info.plist') &&
+              !file.path.contains('/Pods/') &&
+              !file.path.contains('/build/') &&
+              !file.path.contains('.xcodeproj') &&
+              !file.path.contains('Tests')) {
+            return file;
+          }
+        }
+      }
     }
     return null;
   }
@@ -87,6 +119,17 @@ class ProjectDetector {
       for (final file in files) {
         if (file.path.endsWith('.entitlements')) {
           return file;
+        }
+      }
+    } else if (projectType == ProjectType.reactNative) {
+      final iosDir = Directory(path.join(projectPath, 'ios'));
+      if (iosDir.existsSync()) {
+        for (final file in iosDir.listSync(recursive: true).whereType<File>()) {
+          if (file.path.endsWith('.entitlements') &&
+              !file.path.contains('/Pods/') &&
+              !file.path.contains('/build/')) {
+            return file;
+          }
         }
       }
     }
@@ -116,6 +159,17 @@ class ProjectDetector {
           }
         }
       }
+    } else if (projectType == ProjectType.reactNative) {
+      final iosDir = Directory(path.join(projectPath, 'ios'));
+      if (iosDir.existsSync()) {
+        for (final file in iosDir.listSync(recursive: true).whereType<File>()) {
+          if (file.path.endsWith('.entitlements') &&
+              !file.path.contains('/Pods/') &&
+              !file.path.contains('/build/')) {
+            entitlements.add(file);
+          }
+        }
+      }
     }
 
     return entitlements;
@@ -126,7 +180,9 @@ class ProjectDetector {
     String projectPath,
     ProjectType projectType,
   ) {
-    if (projectType == ProjectType.flutter) {
+    if (projectType == ProjectType.flutter ||
+        projectType == ProjectType.reactNative) {
+      // Flutter and React Native share the same Android manifest location.
       final manifestPath = path.join(
         projectPath,
         'android',

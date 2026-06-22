@@ -166,6 +166,7 @@ ulink --version
 
 ### 1. SDK Package Installation
 - **Flutter**: Checks `pubspec.yaml` for `flutter_ulink_sdk`
+- **React Native / Expo**: Checks `package.json` for `@ulinkly/react-native` (and `app.json` for the Expo config plugin)
 - **Android**: Checks `build.gradle` for `ly.ulink:ulink-sdk`
 - **iOS**: Checks `Podfile` or `Package.swift` for `ULinkSDK`
 
@@ -173,6 +174,7 @@ ulink --version
 - **iOS**: `Info.plist`, entitlements file (Associated Domains, URL Types)
 - **Android**: `AndroidManifest.xml` (intent filters, App Links)
 - **Flutter**: Both iOS and Android configurations
+- **React Native / Expo**: Both iOS and Android native config when present (bare RN or after `expo prebuild`); managed Expo projects are verified via the config plugin in `app.json`
 
 ### 3. ULink Project Configuration
 - Fetches project configuration from ULink API
@@ -205,6 +207,11 @@ ulink verify -v
 cd ~/projects/my-ios-app
 ulink project set
 ulink verify --path ./ios
+
+# Verify a React Native / Expo project
+cd ~/projects/my-rn-app
+ulink project set
+ulink verify -v   # run after `npx expo prebuild` for full native checks
 
 # Fix configuration issues interactively
 ulink fix -v

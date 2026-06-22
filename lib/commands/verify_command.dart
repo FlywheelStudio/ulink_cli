@@ -8,6 +8,7 @@ import '../parsers/project_detector.dart';
 import '../parsers/ios_parser.dart';
 import '../parsers/android_parser.dart';
 import '../parsers/flutter_parser.dart';
+import '../parsers/react_native_parser.dart';
 import '../validators/sdk_package_validator.dart';
 import '../validators/ios_validator.dart';
 import '../validators/android_validator.dart';
@@ -188,6 +189,11 @@ class VerifyCommand {
       if (androidManifest != null) {
         localConfig = AndroidParser.parseAndroidManifest(androidManifest);
       }
+    } else if (projectType == ProjectType.reactNative) {
+      // React Native is cross-platform: parse whatever native config exists
+      // (bare RN or post-`expo prebuild`). Managed Expo projects yield an
+      // empty-but-non-null config; native checks are gated on dir existence.
+      localConfig = ReactNativeParser.parseReactNativeProject(absolutePath);
     }
 
     if (localConfig == null) {
@@ -214,12 +220,35 @@ class VerifyCommand {
     // 3. Validate local configuration files
     final validateSpinner = ProgressSpinner('Validating configuration files...', verbose: verbose);
     validateSpinner.start();
-    if (projectType == ProjectType.flutter || projectType == ProjectType.ios) {
+    // React Native native dirs only exist for bare RN or after `expo prebuild`.
+    final rnHasIos = projectType == ProjectType.reactNative &&
+        Directory(path.join(absolutePath, 'ios')).existsSync();
+    final rnHasAndroid = projectType == ProjectType.reactNative &&
+        Directory(path.join(absolutePath, 'android')).existsSync();
+
+    if (projectType == ProjectType.flutter ||
+        projectType == ProjectType.ios ||
+        rnHasIos) {
       results.addAll(IosValidator.validate(absolutePath, localConfig));
     }
     if (projectType == ProjectType.flutter ||
-        projectType == ProjectType.android) {
+        projectType == ProjectType.android ||
+        rnHasAndroid) {
       results.addAll(AndroidValidator.validate(absolutePath, localConfig));
+    }
+    if (projectType == ProjectType.reactNative && !rnHasIos && !rnHasAndroid) {
+      results.add(
+        VerificationResult(
+          checkName: 'React Native Native Config',
+          status: VerificationStatus.skipped,
+          message:
+              'No native ios/ or android/ directories found (managed Expo workflow)',
+          fixSuggestion:
+              'Native deep-link config is applied by the Expo config plugin during '
+              '`npx expo prebuild`. Ensure the plugin is in app.json, or run prebuild '
+              'to generate native files for full verification.',
+        ),
+      );
     }
     validateSpinner.success('Configuration files validated');
 
@@ -410,11 +439,13 @@ class VerifyCommand {
       crossRefSpinner.start();
 
       if (projectType == ProjectType.flutter ||
-          projectType == ProjectType.ios) {
+          projectType == ProjectType.ios ||
+          rnHasIos) {
         results.addAll(ConfigValidator.validateIos(localConfig, ulinkConfig));
       }
       if (projectType == ProjectType.flutter ||
-          projectType == ProjectType.android) {
+          projectType == ProjectType.android ||
+          rnHasAndroid) {
         results.addAll(
           ConfigValidator.validateAndroid(localConfig, ulinkConfig),
         );
@@ -435,7 +466,8 @@ class VerifyCommand {
       if (verifiedDomain != null) {
         // Test AASA file for iOS
         if (projectType == ProjectType.flutter ||
-            projectType == ProjectType.ios) {
+            projectType == ProjectType.ios ||
+            projectType == ProjectType.reactNative) {
           if (ulinkConfig.iosTeamId != null &&
               ulinkConfig.iosBundleIdentifier != null) {
             final aasaResult = await WellKnownTester.testAasaFile(
@@ -449,7 +481,8 @@ class VerifyCommand {
 
         // Test Asset Links file for Android
         if (projectType == ProjectType.flutter ||
-            projectType == ProjectType.android) {
+            projectType == ProjectType.android ||
+            projectType == ProjectType.reactNative) {
           if (ulinkConfig.androidPackageName != null) {
             final assetLinksResult = await WellKnownTester.testAssetLinksFile(
               verifiedDomain.host,
@@ -466,7 +499,9 @@ class VerifyCommand {
     }
 
     // 7. Runtime tests (optional, can be skipped if devices not available)
-    if (projectType == ProjectType.flutter || projectType == ProjectType.ios) {
+    if (projectType == ProjectType.flutter ||
+        projectType == ProjectType.ios ||
+        projectType == ProjectType.reactNative) {
       if (ulinkConfig != null && ulinkConfig.domains.isNotEmpty) {
         final iosRuntimeSpinner = ProgressSpinner('Running iOS runtime tests...', verbose: verbose);
         iosRuntimeSpinner.start();
@@ -498,7 +533,8 @@ class VerifyCommand {
     }
 
     if (projectType == ProjectType.flutter ||
-        projectType == ProjectType.android) {
+        projectType == ProjectType.android ||
+        projectType == ProjectType.reactNative) {
       if (ulinkConfig != null && localConfig?.packageName != null) {
         final androidRuntimeSpinner = ProgressSpinner('Running Android runtime tests...', verbose: verbose);
         androidRuntimeSpinner.start();

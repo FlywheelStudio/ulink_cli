@@ -14,6 +14,7 @@ export 'models/platform_config.dart';
 export 'parsers/ios_parser.dart';
 export 'parsers/android_parser.dart';
 export 'parsers/flutter_parser.dart';
+export 'parsers/react_native_parser.dart';
 export 'parsers/gradle_parser.dart';
 export 'parsers/podfile_parser.dart';
 export 'parsers/package_swift_parser.dart';
