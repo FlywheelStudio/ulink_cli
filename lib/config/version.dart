@@ -1,13 +1,13 @@
 /// ULink CLI version information
 class ULinkVersion {
   /// Current version of the CLI tool
-  static const String version = '1.1.3';
+  static const String version = '1.2.0';
 
   /// Build number (incremented with each build)
-  static const String buildNumber = '41';
+  static const String buildNumber = '42';
 
   /// Build date (ISO 8601 format)
-  static const String buildDate = '2026-02-19';
+  static const String buildDate = '2026-06-22';
 
   /// Get full version string
   static String get fullVersion => '$version+$buildNumber';

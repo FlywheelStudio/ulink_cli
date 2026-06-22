@@ -2,7 +2,7 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
-## [Unreleased]
+## [1.2.0] - 2026-06-22
 
 ### Added
 - **React Native / Expo project support** in `ulink verify`:
