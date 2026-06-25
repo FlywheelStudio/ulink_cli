@@ -1,0 +1,4 @@
+# A list of FDL long links using manual-construction query params.
+# This is the other common "export": a developer just has their *.page.link URLs.
+https://acme.page.link/?link=https://acme.com/promo/spring%3Fref%3Demail&apn=com.acme.app&afl=https://play.google.com/store/apps/details?id=com.acme.app&amv=1200&ibi=com.acme.app&isi=1234567890&ifl=https://acme.com/ios&ius=acme&imv=12.0&efr=1&ofl=https://acme.com/promo/spring&st=Spring%20Promo&sd=30%25%20off%20in%20the%20app&si=https://acme.com/og/spring.png&utm_source=newsletter&utm_medium=email&utm_campaign=spring_promo
+https://acme.page.link/?link=https://acme.com/invite%3Fcode%3DABC123&apn=com.acme.app&ibi=com.acme.app&isi=1234567890&utm_source=in_app&utm_medium=referral&utm_campaign=friend_invite

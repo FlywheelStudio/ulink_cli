@@ -1,0 +1,3 @@
+shortLink,link,androidPackageName,iosBundleId,iosAppStoreId,iosCustomScheme,utmSource,utmMedium,utmCampaign,socialTitle
+https://acme.page.link/promo-spring,https://acme.com/promo/spring?ref=email,com.acme.app,com.acme.app,1234567890,acme,newsletter,email,spring_promo,Spring Promo
+https://acme.page.link/invite,https://acme.com/invite?code=ABC123,com.acme.app,com.acme.app,1234567890,acme,in_app,referral,friend_invite,"Join me, it's great"

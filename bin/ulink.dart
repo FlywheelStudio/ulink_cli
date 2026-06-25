@@ -3,7 +3,6 @@
 import 'dart:io';
 import 'package:args/args.dart';
 import 'package:ulink_cli/ulink_cli.dart';
-import 'package:ulink_cli/config/version.dart';
 import 'package:ulink_cli/utils/update_checker.dart';
 
 void main(List<String> args) async {
@@ -42,6 +41,31 @@ void main(List<String> args) async {
     )
     ..addCommand('logout', ArgParser())
     ..addCommand('version', ArgParser())
+    ..addCommand(
+      'import',
+      ArgParser()
+        ..addCommand(
+          'firebase',
+          ArgParser()
+            ..addOption('input',
+                abbr: 'i', help: 'Path to your FDL export ("-" for stdin)')
+            ..addOption('domain',
+                abbr: 'd', help: 'Your ULink domain for the new links')
+            ..addOption('out',
+                abbr: 'o', help: 'Output dir for manifest + link JSON')
+            ..addOption('api-key', help: 'ULink API key for --live')
+            ..addFlag('dry-run',
+                negatable: false,
+                help: 'Preview only; never calls the ULink API (default)')
+            ..addFlag('live',
+                negatable: false, help: 'Create links via the ULink API')
+            ..addFlag('verify',
+                defaultsTo: true, help: 'Run routing+attribution parity checks')
+            ..addFlag('json',
+                negatable: false, help: 'Print the manifest as JSON to stdout')
+            ..addFlag('help', abbr: 'h', negatable: false),
+        ),
+    )
     ..addCommand(
       'project',
       ArgParser()
@@ -84,6 +108,7 @@ void main(List<String> args) async {
     print('  login     Authenticate with ULink (browser, email/password, or API key)');
     print('  logout    Clear stored credentials');
     print('  project   Manage project selection for current directory');
+    print('  import    Migrate Firebase Dynamic Links to ULink (import firebase)');
     print('  version   Show version information\n');
     print('Options:');
     print(parser.usage);
@@ -114,6 +139,28 @@ void main(List<String> args) async {
       await cli.login(useApiKey: useApiKey, usePassword: usePassword);
     } else if (results.command!.name == 'logout') {
       await cli.logout();
+    } else if (results.command!.name == 'import') {
+      final sub = results.command!.command;
+      if (sub == null || sub.name != 'firebase') {
+        stderr.writeln(
+            'Usage: ulink import firebase --input <export> --domain <domain> [options]');
+        stderr.writeln('  See `ulink import firebase --help` for details.');
+        exit(2);
+      }
+      final opts = ImportOptions(
+        input: sub['input'] as String?,
+        domain: sub['domain'] as String?,
+        out: sub['out'] as String?,
+        live: sub['live'] as bool? ?? false,
+        verify: sub['verify'] as bool? ?? true,
+        json: sub['json'] as bool? ?? false,
+        help: sub['help'] as bool? ?? false,
+        apiKey: sub['api-key'] as String?,
+      );
+      final command =
+          ImportCommand(client: SdkLinksClient(apiBase: baseUrl));
+      final result = await command.runFirebase(opts);
+      exit(result.exitCode);
     } else if (results.command!.name == 'version') {
       print(ULinkVersion.versionInfo);
       exit(0);

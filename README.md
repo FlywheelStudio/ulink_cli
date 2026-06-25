@@ -160,6 +160,43 @@ ulink fix
 ulink fix --path ./my-app
 ```
 
+### `ulink import firebase`
+
+Migrate your Firebase Dynamic Links (FDL) to ULink. Parses an FDL export,
+recreates each link under your ULink domain, and verifies routing + attribution
+parity for every link.
+
+```bash
+# Dry-run preview (default — never calls the API):
+ulink import firebase --input fdl-export.json --domain acme.ulink.app
+
+# Read a list of *.page.link URLs from stdin and print the manifest as JSON:
+cat links.txt | ulink import firebase -i - -d acme.ulink.app --json
+
+# Create the links for real (needs an API key):
+ulink import firebase -i fdl-export.json -d acme.ulink.app --live --api-key $ULINK_API_KEY
+```
+
+Accepted inputs (auto-detected): a `DynamicLinkInfo` JSON object, an FDL
+create-request wrapper, a batch `{ "links": [...] }`, a newline-delimited list
+of FDL long-link URLs, or a CSV with a header row of your link inventory.
+Use `-` for `--input` to read from stdin.
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--input` | `-i` | Path to your FDL export (`-` for stdin). **Required.** |
+| `--domain` | `-d` | Your ULink domain for the new links. **Required.** |
+| `--out` | `-o` | Output dir for the manifest + per-link JSON (default `./ulink-import`). |
+| `--live` | | Create links via the ULink API (needs `--api-key`/`ULINK_API_KEY`). |
+| `--api-key` | | ULink API key for `--live` (or set `ULINK_API_KEY`). |
+| `--dry-run` | | Preview only; never calls the API (default until `--live`). |
+| `--no-verify` | | Skip routing + attribution parity checks (on by default). |
+| `--json` | | Print the manifest as JSON to stdout (for piping). |
+
+Every run preserves attribution (UTM + iTunes Connect params, gclid) and
+per-platform routing intent, forwarding them via the link's passthrough
+parameters so they reach your app on open.
+
 ### `ulink version`
 
 Show version information:

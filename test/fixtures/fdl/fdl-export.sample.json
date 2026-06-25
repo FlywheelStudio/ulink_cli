@@ -1,0 +1,83 @@
+{
+  "_comment": "Sample Firebase Dynamic Links export. Each item is a DynamicLinkInfo (the FDL REST create-request shape). This mirrors what a developer gets from the FDL REST API / their stored link configs.",
+  "links": [
+    {
+      "shortLink": "https://acme.page.link/promo-spring",
+      "dynamicLinkInfo": {
+        "domainUriPrefix": "https://acme.page.link",
+        "link": "https://acme.com/promo/spring?ref=email",
+        "androidInfo": {
+          "androidPackageName": "com.acme.app",
+          "androidFallbackLink": "https://play.google.com/store/apps/details?id=com.acme.app",
+          "androidMinPackageVersionCode": "1200"
+        },
+        "iosInfo": {
+          "iosBundleId": "com.acme.app",
+          "iosAppStoreId": "1234567890",
+          "iosFallbackLink": "https://acme.com/ios",
+          "iosCustomScheme": "acme",
+          "iosMinimumVersion": "12.0",
+          "iosIpadBundleId": "com.acme.app.ipad",
+          "iosIpadFallbackLink": "https://acme.com/ipad"
+        },
+        "navigationInfo": { "enableForcedRedirect": true },
+        "analyticsInfo": {
+          "googlePlayAnalytics": {
+            "utmSource": "newsletter",
+            "utmMedium": "email",
+            "utmCampaign": "spring_promo",
+            "utmTerm": "deeplink",
+            "utmContent": "hero_button"
+          },
+          "itunesConnectAnalytics": {
+            "at": "1010l9Qu",
+            "ct": "spring_promo",
+            "mt": "8",
+            "pt": "9876543"
+          }
+        },
+        "socialMetaTagInfo": {
+          "socialTitle": "Spring Promo — 30% off",
+          "socialDescription": "Open the Acme app for your exclusive spring deal.",
+          "socialImageLink": "https://acme.com/og/spring.png"
+        }
+      }
+    },
+    {
+      "shortLink": "https://acme.page.link/invite",
+      "dynamicLinkInfo": {
+        "domainUriPrefix": "https://acme.page.link",
+        "link": "https://acme.com/invite?code=ABC123",
+        "androidInfo": {
+          "androidPackageName": "com.acme.app",
+          "androidFallbackLink": "https://play.google.com/store/apps/details?id=com.acme.app"
+        },
+        "iosInfo": {
+          "iosBundleId": "com.acme.app",
+          "iosAppStoreId": "1234567890"
+        },
+        "analyticsInfo": {
+          "googlePlayAnalytics": {
+            "utmSource": "in_app",
+            "utmMedium": "referral",
+            "utmCampaign": "friend_invite"
+          }
+        }
+      }
+    },
+    {
+      "shortLink": "https://acme.page.link/blog",
+      "dynamicLinkInfo": {
+        "domainUriPrefix": "https://acme.page.link",
+        "link": "https://acme.com/blog/deep-linking-101",
+        "androidInfo": { "androidPackageName": "com.acme.app" },
+        "iosInfo": { "iosBundleId": "com.acme.app", "iosAppStoreId": "1234567890" },
+        "navigationInfo": { "enableForcedRedirect": false },
+        "socialMetaTagInfo": {
+          "socialTitle": "Deep Linking 101",
+          "socialDescription": "Everything you need to know about mobile deep links."
+        }
+      }
+    }
+  ]
+}

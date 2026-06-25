@@ -2,6 +2,21 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **`ulink import firebase`** — migrate Firebase Dynamic Links to ULink
+  (consolidated from the deprecated Node `@ulink/cli`, re-implemented in Dart):
+  - Parses FDL exports in every common shape: `DynamicLinkInfo` JSON objects /
+    create-request wrappers, batch `{ "links": [...] }`, newline-delimited FDL
+    long-link URLs, and CSV link inventories (with header-alias detection).
+  - Maps each link losslessly to a ULink definition, preserving per-platform
+    routing and **attribution** (UTM + iTunes Connect params, gclid) and
+    forwarding them via passthrough parameters.
+  - Dry-run by default (no network); `--live --api-key` creates links via
+    `POST /sdk/links`. Built-in static parity verification plus a live
+    routing-parity probe; writes a manifest + per-link JSON artifacts.
+
 ## [1.2.0] - 2026-06-22
 
 ### Added
