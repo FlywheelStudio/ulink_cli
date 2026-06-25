@@ -23,7 +23,19 @@ void main(List<String> args) async {
     ..addCommand(
       'verify',
       ArgParser()
-        ..addOption('path', abbr: 'p', defaultsTo: '.', help: 'Project path'),
+        ..addOption('path', abbr: 'p', defaultsTo: '.', help: 'Project path')
+        // Standalone domain-verify mode (no project / no login): pass a domain
+        // as the first argument or via --domain to check the public AASA +
+        // assetlinks.json association files directly.
+        ..addOption('domain',
+            abbr: 'd', help: 'Domain to verify its app-link association files')
+        ..addOption('ios', help: 'Assert this iOS App ID (TEAMID.bundleId)')
+        ..addOption('android',
+            help: 'Assert this Android app (package[:SHA256FP])')
+        ..addFlag('json',
+            negatable: false,
+            help: 'Print the machine-readable domain-verify result to stdout')
+        ..addFlag('help', abbr: 'h', negatable: false),
     )
     ..addCommand(
       'fix',
@@ -115,7 +127,7 @@ void main(List<String> args) async {
     print('Version: ${ULinkVersion.shortVersion}\n');
     print('Usage: ulink <command> [options]\n');
     print('Commands:');
-    print('  verify    Verify project configuration');
+    print('  verify    Verify project configuration (or a domain: verify <domain>)');
     print('  fix       Interactive mode to fix configuration issues');
     print('  login     Authenticate with ULink (browser, email/password, or API key)');
     print('  logout    Clear stored credentials');
@@ -141,7 +153,25 @@ void main(List<String> args) async {
 
   try {
     if (results.command!.name == 'verify') {
-      final projectPath = results.command!['path'] as String;
+      final sub = results.command!;
+      // A domain (positional or --domain) selects standalone domain-verify;
+      // otherwise fall through to project-config verify. Project mode never
+      // takes a positional (it uses -p/--path), so there is no ambiguity.
+      final domainArg =
+          (sub['domain'] as String?) ?? (sub.rest.isNotEmpty ? sub.rest.first : null);
+      final help = sub['help'] as bool? ?? false;
+      if (domainArg != null || help) {
+        final command = DomainVerifyCommand();
+        final result = await command.run(DomainVerifyOptions(
+          domain: domainArg,
+          ios: sub['ios'] as String?,
+          android: sub['android'] as String?,
+          json: sub['json'] as bool? ?? false,
+          help: help,
+        ));
+        exit(result.exitCode);
+      }
+      final projectPath = sub['path'] as String;
       await cli.verify(projectPath);
     } else if (results.command!.name == 'fix') {
       final projectPath = results.command!['path'] as String;

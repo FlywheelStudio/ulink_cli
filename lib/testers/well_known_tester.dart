@@ -1,10 +1,86 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/verification_result.dart';
-import '../models/project_config.dart';
 
-/// Tester for well-known files (AASA and Asset Links)
+/// A single `android_app` statement from an `assetlinks.json` file: the
+/// declared package and its SHA-256 certificate fingerprints.
+class AssetlinksApp {
+  final String package;
+  final List<String> fingerprints;
+  AssetlinksApp(this.package, this.fingerprints);
+}
+
+/// Tester for well-known files (AASA and Asset Links).
+///
+/// The instance verdict methods ([testAasaFile] / [testAssetLinksFile]) back
+/// the credentialed project-config `verify` flow. The pure static extractors
+/// below ([extractAasaAppIds] / [extractAssetlinksApps] / [normalizeFingerprint])
+/// are the shared, single-source-of-truth parsing primitives reused by the
+/// standalone `verify --domain` command (see `DomainVerifyCommand`), so the
+/// AASA/assetlinks shape is only understood in one place.
 class WellKnownTester {
+  /// Collect every iOS App ID declared in an AASA file. Mirrors the Node
+  /// `aasaAppIds()` in `@ulink/cli` `src/commands/verify.js`: v1 `applinks`
+  /// `details[].appID`/`details[].appIDs[]` plus the legacy `applinks.apps[]`.
+  static List<String> extractAasaAppIds(Map<String, dynamic>? json) {
+    final al = json?['applinks'];
+    if (al is! Map) return const [];
+    final ids = <String>{};
+    final details = al['details'];
+    if (details is List) {
+      for (final d in details) {
+        if (d is Map) {
+          final appId = d['appID'];
+          if (appId is String) ids.add(appId);
+          final appIds = d['appIDs'];
+          if (appIds is List) {
+            for (final a in appIds) {
+              if (a is String) ids.add(a);
+            }
+          }
+        }
+      }
+    }
+    final apps = al['apps'];
+    if (apps is List) {
+      for (final a in apps) {
+        if (a is String) ids.add(a);
+      }
+    }
+    return ids.toList();
+  }
+
+  /// Collect the `{package, fingerprints}` entries from an `assetlinks.json`
+  /// file. Mirrors the Node `assetlinksApps()` in `src/commands/verify.js`.
+  static List<AssetlinksApp> extractAssetlinksApps(dynamic json) {
+    final out = <AssetlinksApp>[];
+    if (json is List) {
+      for (final stmt in json) {
+        if (stmt is Map) {
+          final t = stmt['target'];
+          if (t is Map &&
+              t['namespace'] == 'android_app' &&
+              t['package_name'] is String) {
+            final fps = <String>[];
+            final raw = t['sha256_cert_fingerprints'];
+            if (raw is List) {
+              for (final f in raw) {
+                fps.add(f.toString());
+              }
+            }
+            out.add(AssetlinksApp(t['package_name'] as String, fps));
+          }
+        }
+      }
+    }
+    return out;
+  }
+
+  /// Canonicalize a SHA-256 fingerprint for comparison: drop `:` separators and
+  /// lower-case. Mirrors `normFp()` in the Node `src/commands/verify.js`.
+  static String normalizeFingerprint(String s) =>
+      s.replaceAll(':', '').toLowerCase();
+
   /// Test Apple App Site Association (AASA) file
   static Future<VerificationResult> testAasaFile(
     String domain,
