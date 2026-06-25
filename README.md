@@ -14,7 +14,25 @@ Then ask your agent to **"setup ulink"** — it'll install this CLI for you, run
 
 ## Installation
 
-### Quick Install (Recommended)
+### npm (zero-install)
+
+If you have Node.js, run the CLI with no install via [`@ulinkly/cli`](https://www.npmjs.com/package/@ulinkly/cli):
+
+```bash
+npx @ulinkly/cli --help
+npx @ulinkly/cli verify
+```
+
+Or install it globally:
+
+```bash
+npm install -g @ulinkly/cli
+ulink --version
+```
+
+> `@ulinkly/cli` is a thin launcher that downloads the matching native binary on first run and caches it. The npm version maps 1:1 to a CLI release (e.g. `1.2.0` → `v1.2.0`).
+
+### Quick Install (script)
 
 **macOS / Linux:**
 ```bash
@@ -41,12 +59,12 @@ curl -fsSL https://ulink.ly/install.sh | bash -s -- --version v1.0.0
 ### For Dart Developers
 
 ```bash
-dart pub global activate --source git https://github.com/mohn93/ulink_cli.git
+dart pub global activate --source git https://github.com/FlywheelStudio/ulink_cli.git
 ```
 
 ### Manual Download
 
-Download binaries directly from [GitHub Releases](https://github.com/mohn93/ulink_cli/releases).
+Download binaries directly from [GitHub Releases](https://github.com/FlywheelStudio/ulink_cli/releases).
 
 ## Quick Start
 
@@ -231,4 +249,4 @@ Run `ulink verify -v` for verbose output to see detailed error messages.
 ## Support
 
 - Documentation: [https://ulink.ly/docs](https://ulink.ly/docs)
-- Issues: [GitHub Issues](https://github.com/mohn93/ulink_cli/issues)
+- Issues: [GitHub Issues](https://github.com/FlywheelStudio/ulink_cli/issues)

@@ -1,6 +1,22 @@
 # Installing ULink CLI
 
-## Quick Install (Recommended)
+## npm (zero-install)
+
+If you have Node.js, no installation is needed — run the CLI on demand via [`@ulinkly/cli`](https://www.npmjs.com/package/@ulinkly/cli):
+
+```bash
+npx @ulinkly/cli --version
+```
+
+Or install it globally:
+
+```bash
+npm install -g @ulinkly/cli
+```
+
+`@ulinkly/cli` downloads the matching native binary on first run and caches it under `~/.ulink/npm/`. The npm version maps 1:1 to a CLI release (e.g. `1.2.0` → `v1.2.0`).
+
+## Quick Install (script)
 
 ### macOS / Linux
 
@@ -45,7 +61,7 @@ curl -fsSL https://ulink.ly/install.sh | bash -s -- --ci
 
 ### Download from GitHub Releases
 
-1. Go to [GitHub Releases](https://github.com/mohn93/ulink_cli/releases)
+1. Go to [GitHub Releases](https://github.com/FlywheelStudio/ulink_cli/releases)
 2. Download the appropriate binary for your platform:
    - `ulink-macos-arm64` - macOS Apple Silicon
    - `ulink-macos-x64` - macOS Intel
@@ -66,7 +82,7 @@ curl -fsSL https://ulink.ly/install.sh | bash -s -- --ci
 If you have Dart SDK installed:
 
 ```bash
-dart pub global activate --source git https://github.com/mohn93/ulink_cli.git
+dart pub global activate --source git https://github.com/FlywheelStudio/ulink_cli.git
 ```
 
 ## Verify Installation

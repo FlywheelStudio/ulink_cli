@@ -1,0 +1,43 @@
+{
+  "name": "@ulinkly/cli",
+  "version": "1.2.0",
+  "description": "ULink CLI — verify universal links & app links configuration for ULink projects",
+  "bin": {
+    "ulink": "./bin/ulink.js"
+  },
+  "files": [
+    "bin/ulink.js",
+    "README.md"
+  ],
+  "homepage": "https://ulink.ly",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FlywheelStudio/ulink_cli",
+    "directory": "npm"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "keywords": [
+    "ulink",
+    "ulinkly",
+    "deeplink",
+    "deep-linking",
+    "universal-links",
+    "app-links",
+    "cli"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
