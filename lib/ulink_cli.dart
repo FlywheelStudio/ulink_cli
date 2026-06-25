@@ -3,6 +3,7 @@ library ulink_cli;
 export 'commands/verify_command.dart';
 export 'commands/fix_command.dart';
 export 'commands/import_command.dart';
+export 'commands/resolve_command.dart';
 export 'import/fdl_parser.dart';
 export 'import/fdl_mapper.dart';
 export 'import/import_parity.dart';

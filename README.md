@@ -197,6 +197,29 @@ Every run preserves attribution (UTM + iTunes Connect params, gclid) and
 per-platform routing intent, forwarding them via the link's passthrough
 parameters so they reach your app on open.
 
+### `ulink resolve`
+
+Show where a ULink short URL resolves on each platform (iOS / iPad / Android /
+desktop), plus the in-app deep link and any attribution parameters the link
+forwards. Read-only: it never creates or mutates anything — it just reads back
+how a live link routes via `GET /sdk/resolve`.
+
+```bash
+# Human-readable per-platform resolution:
+ulink resolve https://acme.ulink.app/promo-spring
+
+# Machine-readable output (for piping / CI parity checks):
+ulink resolve acme.ulink.app/promo-spring --json
+```
+
+| Option | Description |
+|--------|-------------|
+| `--url` | The ULink short URL (or pass it as the first positional argument). |
+| `--api-key` | ULink API key (or set `ULINK_API_KEY`). Optional — only needed to read a link's forwarded attribution parameters, which are visible to the owning app. |
+| `--json` | Print the machine-readable resolution to stdout. |
+
+Exit codes: `0` resolved, `1` not found / unreachable / API error, `2` bad usage.
+
 ### `ulink version`
 
 Show version information:

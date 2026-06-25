@@ -42,6 +42,18 @@ void main(List<String> args) async {
     ..addCommand('logout', ArgParser())
     ..addCommand('version', ArgParser())
     ..addCommand(
+      'resolve',
+      ArgParser()
+        ..addOption('url',
+            help: 'The ULink short URL (or pass it as the first argument)')
+        ..addOption('api-key',
+            help: 'ULink API key (or set ULINK_API_KEY); optional')
+        ..addFlag('json',
+            negatable: false,
+            help: 'Print the machine-readable resolution to stdout')
+        ..addFlag('help', abbr: 'h', negatable: false),
+    )
+    ..addCommand(
       'import',
       ArgParser()
         ..addCommand(
@@ -109,6 +121,7 @@ void main(List<String> args) async {
     print('  logout    Clear stored credentials');
     print('  project   Manage project selection for current directory');
     print('  import    Migrate Firebase Dynamic Links to ULink (import firebase)');
+    print('  resolve   Show where a ULink short URL resolves per platform');
     print('  version   Show version information\n');
     print('Options:');
     print(parser.usage);
@@ -160,6 +173,19 @@ void main(List<String> args) async {
       final command =
           ImportCommand(client: SdkLinksClient(apiBase: baseUrl));
       final result = await command.runFirebase(opts);
+      exit(result.exitCode);
+    } else if (results.command!.name == 'resolve') {
+      final sub = results.command!;
+      // Accept the short URL as a positional arg or via --url.
+      final positional = sub.rest.isNotEmpty ? sub.rest.first : null;
+      final opts = ResolveOptions(
+        url: (sub['url'] as String?) ?? positional,
+        apiKey: sub['api-key'] as String?,
+        json: sub['json'] as bool? ?? false,
+        help: sub['help'] as bool? ?? false,
+      );
+      final command = ResolveCommand(client: SdkLinksClient(apiBase: baseUrl));
+      final result = await command.run(opts);
       exit(result.exitCode);
     } else if (results.command!.name == 'version') {
       print(ULinkVersion.versionInfo);

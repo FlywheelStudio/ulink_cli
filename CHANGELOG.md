@@ -16,6 +16,15 @@ All notable changes to the ULink CLI will be documented in this file.
   - Dry-run by default (no network); `--live --api-key` creates links via
     `POST /sdk/links`. Built-in static parity verification plus a live
     routing-parity probe; writes a manifest + per-link JSON artifacts.
+- **`ulink resolve <url>`** — standalone per-platform short-URL resolution
+  (consolidated from the deprecated Node `@ulink/cli`, re-implemented in Dart):
+  - Reads back how a live ULink short URL routes on iOS / iPad / Android /
+    desktop via `GET /sdk/resolve`, plus the in-app deep link and forwarded
+    attribution parameters. Read-only — never creates or mutates anything.
+  - Human-readable output by default; `--json` for machine-readable output.
+    Optional `--api-key`/`ULINK_API_KEY` surfaces owner-only attribution.
+  - Distinguishes a genuine 404 (link not found) from an unreachable edge;
+    exit codes `0` resolved / `1` not-found-or-unreachable / `2` bad usage.
 
 ## [1.2.0] - 2026-06-22
 
