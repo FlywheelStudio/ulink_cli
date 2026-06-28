@@ -2,7 +2,11 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
-## [Unreleased]
+## [1.3.0] - 2026-06-28
+
+Consolidation release: the Node `@ulink/cli` (FDL importer) work has been
+ported into this canonical Dart CLI, so there is now a single `ulink` binary
+and no command collisions. The deprecated Node `@ulink/cli` is retired.
 
 ### Added
 - **`ulink import firebase`** — migrate Firebase Dynamic Links to ULink
@@ -25,6 +29,12 @@ All notable changes to the ULink CLI will be documented in this file.
     Optional `--api-key`/`ULINK_API_KEY` surfaces owner-only attribution.
   - Distinguishes a genuine 404 (link not found) from an unreachable edge;
     exit codes `0` resolved / `1` not-found-or-unreachable / `2` bad usage.
+- **`ulink verify <domain>` / `verify --domain`** — standalone Universal Links /
+  App Links domain check (consolidated from the deprecated Node `@ulink/cli`):
+  - Fetches and validates a domain's `apple-app-site-association` (AASA) and
+    Android `assetlinks.json` directly, independent of any local project config.
+  - Reports per-platform pass/fail with the parsed appIDs / package names, so a
+    domain can be verified without a checked-out project.
 
 ## [1.2.0] - 2026-06-22
 
