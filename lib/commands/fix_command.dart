@@ -1,5 +1,4 @@
 import '../commands/verify_command.dart';
-import '../models/verification_result.dart';
 
 /// Command for interactively fixing configuration issues
 class FixCommand {

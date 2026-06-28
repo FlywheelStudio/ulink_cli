@@ -1,4 +1,3 @@
-import 'dart:io';
 import '../models/verification_result.dart';
 import '../models/platform_config.dart';
 import '../parsers/ios_parser.dart';

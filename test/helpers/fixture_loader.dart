@@ -4,11 +4,6 @@ import 'package:path/path.dart' as path;
 
 /// Utility for loading test fixtures
 class FixtureLoader {
-  static final String _fixturesPath = path.join(
-    path.dirname(Platform.script.toFilePath()),
-    'fixtures',
-  );
-
   /// Get the fixtures directory path
   static String get fixturesPath {
     // When running tests, use the test/fixtures path relative to the package root

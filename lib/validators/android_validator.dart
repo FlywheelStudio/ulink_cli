@@ -1,6 +1,5 @@
 import '../models/verification_result.dart';
 import '../models/platform_config.dart';
-import '../parsers/android_parser.dart';
 import '../parsers/project_detector.dart';
 
 /// Validator for Android configuration files

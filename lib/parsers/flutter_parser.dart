@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:yaml/yaml.dart';
 import '../models/platform_config.dart';
 import 'ios_parser.dart';
 import 'android_parser.dart';
@@ -10,15 +8,11 @@ class FlutterParser {
   /// Parse Flutter project configuration
   static PlatformConfig? parseFlutterProject(String projectPath) {
     try {
-      // Parse pubspec.yaml for basic info
+      // Ensure this is a Flutter project before parsing platform configs
       final pubspecFile = ProjectDetector.findPubspecYaml(projectPath);
       if (pubspecFile == null) {
         return null;
       }
-
-      final content = pubspecFile.readAsStringSync();
-      final yaml = loadYaml(content) as Map;
-      final packageName = yaml['name'] as String?;
 
       // Parse iOS configuration
       final infoPlist = ProjectDetector.findInfoPlist(

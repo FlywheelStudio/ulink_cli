@@ -3,7 +3,6 @@ import 'package:path/path.dart' as path;
 import '../models/verification_result.dart';
 import '../models/platform_config.dart';
 import '../models/project_config.dart';
-import '../models/target_info.dart';
 import '../parsers/project_detector.dart';
 import '../parsers/ios_parser.dart';
 import '../parsers/android_parser.dart';
