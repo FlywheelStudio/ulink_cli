@@ -23,7 +23,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../config/version.dart';
+
 const String _defaultApiBase = 'https://api.ulink.ly';
+
+/// Stable marker written into every importer-created link's `metadata` so the
+/// FDL-wedge funnel can be measured server-side (ULI-80, funnel step 3:
+/// page -> importer-run -> verified link). The value is a fixed, non-PII
+/// channel tag; the API persists `metadata` verbatim into the `links.metadata`
+/// jsonb column, so no backend change is needed to count importer links:
+///   verified importer links = metadata->>'source' = 'cli:import-firebase'
+///                             AND click_count >= 1
+/// (the importer's own --verify pass resolves each created link once, which
+/// records the first click — so a link that passed verification has
+/// click_count >= 1).
+const String importerSourceTag = 'cli:import-firebase';
 
 /// Outcome of a create (live or preview).
 class CreateOutcome {
@@ -132,6 +146,10 @@ class SdkLinksClient {
       'ogTitle': social['title'],
       'ogDescription': social['description'],
       'ogImage': social['imageUrl'],
+      // Channel marker (ULI-80): identifies links created via the FDL importer
+      // so the wedge funnel is countable server-side. Non-PII, always present.
+      'source': importerSourceTag,
+      'sourceVersion': ULinkVersion.version,
     });
 
     return _pruneEmpty({

@@ -8,6 +8,7 @@ import 'package:ulink_cli/import/fdl_mapper.dart';
 import 'package:ulink_cli/import/import_parity.dart';
 import 'package:ulink_cli/api/sdk_links_client.dart';
 import 'package:ulink_cli/commands/import_command.dart';
+import 'package:ulink_cli/config/version.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -207,6 +208,9 @@ void main() {
       expect(pl['allowQueryPassthrough'], true);
       expect(pl['metadata']['ogTitle'], 'Hi');
       expect(pl['metadata']['ogImage'], 'https://acme.com/og.png');
+      // ULI-80: every importer-created link carries the funnel source marker.
+      expect(pl['metadata']['source'], 'cli:import-firebase');
+      expect(pl['metadata']['sourceVersion'], ULinkVersion.version);
       // deep link + attribution forwarded via parameters
       expect(pl['parameters']['deepLink'], 'https://acme.com/x');
       expect(pl['parameters']['iosCustomScheme'], 'acme');
@@ -222,6 +226,20 @@ void main() {
       final link = FdlMapper.mapToUlink(fdl, domain: 'acme.ulink.ly', index: 0);
       expect(SdkLinksClient.toSdkPayload(link)['fallbackUrl'],
           'https://acme.com/only');
+    });
+
+    // ULI-80: the funnel marker must be present even when the FDL has no OG /
+    // social metadata (the common case), so no importer link is ever unlabelled.
+    test('stamps the funnel source marker even with no OG metadata', () {
+      final fdl =
+          FdlParser.parseUrl('https://acme.page.link/?link=https://acme.com/x');
+      final link = FdlMapper.mapToUlink(fdl, domain: 'acme.ulink.ly', index: 0);
+      final md = SdkLinksClient.toSdkPayload(link)['metadata']
+          as Map<String, dynamic>;
+      expect(md['source'], 'cli:import-firebase');
+      expect(md['sourceVersion'], ULinkVersion.version);
+      expect(md.containsKey('ogTitle'), isFalse);
+      expect(importerSourceTag, 'cli:import-firebase');
     });
 
     // ULI-34 guard: the importer's #1 promise is "attribution preserved". Prove
