@@ -1,0 +1,39 @@
+{
+  "name": "@ulinkly/sdk",
+  "version": "0.1.0",
+  "description": "The Firebase Dynamic Links alternative for JavaScript, React Native & web — create dynamic/universal links that route, survive install, and work across iOS & Android.",
+  "type": "module",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "require": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "smoke": "node test/smoke.mjs"
+  },
+  "keywords": [
+    "deep-linking",
+    "deep-links",
+    "dynamic-links",
+    "firebase-dynamic-links",
+    "fdl-alternative",
+    "universal-links",
+    "app-links",
+    "react-native",
+    "attribution",
+    "ulink"
+  ],
+  "homepage": "https://ulink.ly",
+  "license": "MIT",
+  "sideEffects": false
+}
