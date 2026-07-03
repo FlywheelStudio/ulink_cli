@@ -1,0 +1,35 @@
+# Automated publishing to pub.dev via GitHub Actions + OIDC (keyless).
+#
+# This mirrors the tag-trigger convention of release.yml (which cuts the
+# GitHub Release + binaries). Pushing a version tag like `v1.4.0` triggers
+# BOTH: release.yml builds/attaches the platform binaries, and this workflow
+# publishes the package to pub.dev.
+#
+# No secrets/tokens are stored: the reusable dart-lang workflow exchanges a
+# short-lived GitHub OIDC id-token for a pub.dev publish credential. This
+# requires a ONE-TIME setup on pub.dev by a package admin (see below).
+#
+# One-time pub.dev setup (package admin / board, Google account):
+#   1. Sign in at https://pub.dev with the account that owns `ulink_cli`.
+#   2. Go to https://pub.dev/packages/ulink_cli/admin
+#   3. Under "Automated publishing" → "Enable publishing from GitHub Actions".
+#   4. Repository:   FlywheelStudio/ulink_cli
+#      Tag pattern:  v{{version}}
+#   After that, tagging `vX.Y.Z` here publishes X.Y.Z with no manual step.
+#
+# pub.dev docs: https://dart.dev/tools/pub/automated-publishing
+
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      # Version tags only (v1.2.3). pub.dev verifies the tag matches the
+      # pubspec version, so pre-release/other tags are intentionally excluded.
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # REQUIRED for OIDC keyless authentication to pub.dev
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1

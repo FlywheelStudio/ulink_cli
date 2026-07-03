@@ -2,6 +2,13 @@ name: ulink_cli
 description: CLI tool for verifying universal links and app links configuration for ULink projects
 version: 1.3.0
 homepage: https://ulink.ly
+repository: https://github.com/FlywheelStudio/ulink_cli
+issue_tracker: https://github.com/FlywheelStudio/ulink_cli/issues
+topics:
+  - cli
+  - deep-links
+  - universal-links
+  - app-links
 
 environment:
   sdk: ^3.6.2
