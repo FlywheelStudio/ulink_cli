@@ -1,0 +1,33 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.flywheelstudio/ulink",
+  "description": "Deep linking & FDL migration for AI agents. Create, import, and verify mobile deep links without leaving your editor — migrate off Firebase Dynamic Links, generate universal/app links, and confirm they resolve on iOS and Android.",
+  "status": "active",
+  "repository": {
+    "url": "https://github.com/FlywheelStudio/ulink_cli",
+    "source": "github",
+    "subfolder": "mcp"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@ulinkly/mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "ULINK_API_KEY",
+          "description": "ULink app key (free tier at https://ulink.ly/dashboard). Sent as x-app-key.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "ULINK_API_BASE",
+          "description": "Override the ULink API base URL (default https://api.ulink.ly).",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
