@@ -45,6 +45,9 @@ void main(List<String> args) async {
     ..addCommand(
       'login',
       ArgParser()
+        ..addFlag('browser',
+            negatable: false,
+            help: 'Login with the browser-based flow (default)')
         ..addFlag('api-key',
             help: 'Login with API key instead of browser')
         ..addFlag('password',
