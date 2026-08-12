@@ -2,6 +2,16 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.3.1] - 2026-08-12
+
+### Added
+- **`ulink login --browser`** — explicit alias for the default browser-based
+  login flow. Browser login is already the default, but the flag was never
+  accepted, so `ulink login --browser` errored with "Could not find an option
+  named browser". The `/auth/cli` page previously told users to run exactly that
+  command on failure; the flag now parses as a no-op that selects the default
+  flow, and the page copy points outdated CLIs at updating instead.
+
 ## [1.3.0] - 2026-06-28
 
 Consolidation release: the Node `@ulink/cli` (FDL importer) work has been
