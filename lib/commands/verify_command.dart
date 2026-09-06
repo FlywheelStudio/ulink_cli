@@ -28,9 +28,15 @@ class VerifyCommand {
   final String baseUrl;
   final bool verbose;
 
+  /// When true, a run that skipped checks (e.g. the dashboard cross-checks
+  /// because no credentials were available) exits non-zero instead of 0, so a
+  /// partial verification never passes silently in CI.
+  final bool strict;
+
   VerifyCommand({
     required this.baseUrl,
     this.verbose = false,
+    this.strict = false,
   });
 
   /// Execute verification
@@ -631,9 +637,18 @@ class VerifyCommand {
       }
     }
 
-    // Exit with appropriate code
+    // Exit with appropriate code.
+    //   0 = fully verified (or passed with warnings)
+    //   1 = errors
+    //   2 = --strict and one or more checks were skipped (not a full run)
     if (report.hasErrors) {
       exit(1);
+    } else if (strict && report.hasSkipped) {
+      if (verbose) {
+        stderr.writeln(ConsoleStyle.warning(
+            '--strict: exiting 2 because ${report.skippedCount} check(s) were skipped.'));
+      }
+      exit(2);
     } else {
       exit(0);
     }

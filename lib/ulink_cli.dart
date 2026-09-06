@@ -58,10 +58,11 @@ class ULinkCLI {
   });
 
   /// Verify project configuration
-  Future<void> verify(String projectPath) async {
+  Future<void> verify(String projectPath, {bool strict = false}) async {
     final verifyCommand = VerifyCommand(
       baseUrl: baseUrl,
       verbose: verbose,
+      strict: strict,
     );
     await verifyCommand.execute(projectPath);
   }

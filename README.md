@@ -146,7 +146,19 @@ ulink verify --path ./my-app
 
 # Verbose output
 ulink verify -v
+
+# CI: fail if the run wasn't a full verification (any checks skipped)
+ulink verify --strict
 ```
+
+The dashboard cross-checks (comparing local config against your ULink project
+and fetching the hosted AASA / assetlinks.json) only run when authenticated
+(`ulink login` or `--api-key`). Without them the run is reported as PARTIAL and,
+by default, still exits `0` so unauthenticated smoke tests don't break. Pass
+`--strict` to make a partial run fail instead.
+
+Exit codes: `0` fully verified (or passed with warnings), `1` errors,
+`2` `--strict` and one or more checks were skipped.
 
 ### `ulink fix`
 
