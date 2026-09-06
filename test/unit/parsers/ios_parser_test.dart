@@ -206,6 +206,167 @@ void main() {
         expect(result!.bundleIdentifier, 'com.example.resolved');
       });
 
+      // Multi-target project: the notification-extension build configuration is
+      // written BEFORE the app's, and its bundle id contains no "Test", so the
+      // legacy first-non-test heuristic would resolve the app's
+      // $(PRODUCT_BUNDLE_IDENTIFIER) to the extension. Resolution must be scoped
+      // to the target that owns each Info.plist.
+      const multiTargetPbxproj = '''// !\$*UTF8*\$!
+{
+  objects = {
+    AAAA1111AAAA1111AAAA1111 /* NotificationService */ = {
+      isa = PBXNativeTarget;
+      buildConfigurationList = BBBB2222BBBB2222BBBB2222 /* list for NotificationService */;
+      productType = "com.apple.product-type.app-extension";
+    };
+    CCCC3333CCCC3333CCCC3333 /* Runner */ = {
+      isa = PBXNativeTarget;
+      buildConfigurationList = DDDD4444DDDD4444DDDD4444 /* list for Runner */;
+      productType = "com.apple.product-type.application";
+    };
+    EEEE5555EEEE5555EEEE5555 /* Release */ = {
+      isa = XCBuildConfiguration;
+      buildSettings = {
+        INFOPLIST_FILE = NotificationService/Info.plist;
+        PRODUCT_BUNDLE_IDENTIFIER = dev.rart.abrezo.app.NotificationServiceExtension;
+      };
+      name = Release;
+    };
+    FFFF6666FFFF6666FFFF6666 /* Release */ = {
+      isa = XCBuildConfiguration;
+      buildSettings = {
+        INFOPLIST_FILE = Runner/Info.plist;
+        PRODUCT_BUNDLE_IDENTIFIER = dev.rart.abrezo.app;
+      };
+      name = Release;
+    };
+    BBBB2222BBBB2222BBBB2222 /* list for NotificationService */ = {
+      isa = XCConfigurationList;
+      buildConfigurations = (
+        EEEE5555EEEE5555EEEE5555 /* Release */,
+      );
+    };
+    DDDD4444DDDD4444DDDD4444 /* list for Runner */ = {
+      isa = XCConfigurationList;
+      buildConfigurations = (
+        FFFF6666FFFF6666FFFF6666 /* Release */,
+      );
+    };
+  };
+}''';
+
+      const variablePlist = '''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>\$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+</dict>
+</plist>''';
+
+      test(
+          'resolves the application bundle id, not an extension listed earlier '
+          'in the pbxproj', () async {
+        await TestHelpers.createFile(
+          tempDir,
+          'Runner.xcodeproj/project.pbxproj',
+          multiTargetPbxproj,
+        );
+        final file = await TestHelpers.createFile(
+          tempDir,
+          'Runner/Info.plist',
+          variablePlist,
+        );
+
+        final result = IosParser.parseInfoPlist(file);
+
+        expect(result, isNotNull);
+        expect(result!.bundleIdentifier, 'dev.rart.abrezo.app');
+      });
+
+      test('resolves each target\'s own bundle id (extension Info.plist)',
+          () async {
+        await TestHelpers.createFile(
+          tempDir,
+          'Runner.xcodeproj/project.pbxproj',
+          multiTargetPbxproj,
+        );
+        final file = await TestHelpers.createFile(
+          tempDir,
+          'NotificationService/Info.plist',
+          variablePlist,
+        );
+
+        final result = IosParser.parseInfoPlist(file);
+
+        expect(result, isNotNull);
+        expect(result!.bundleIdentifier,
+            'dev.rart.abrezo.app.NotificationServiceExtension');
+      });
+
+      test(
+          'falls back to the application target when no INFOPLIST_FILE points '
+          'at the plist', () async {
+        // No INFOPLIST_FILE anywhere; the extension config is still first.
+        const pbxproj = '''// !\$*UTF8*\$!
+{
+  objects = {
+    AAAA1111AAAA1111AAAA1111 /* NotificationService */ = {
+      isa = PBXNativeTarget;
+      buildConfigurationList = BBBB2222BBBB2222BBBB2222 /* list */;
+      productType = "com.apple.product-type.app-extension";
+    };
+    CCCC3333CCCC3333CCCC3333 /* Runner */ = {
+      isa = PBXNativeTarget;
+      buildConfigurationList = DDDD4444DDDD4444DDDD4444 /* list */;
+      productType = "com.apple.product-type.application";
+    };
+    EEEE5555EEEE5555EEEE5555 /* Release */ = {
+      isa = XCBuildConfiguration;
+      buildSettings = {
+        PRODUCT_BUNDLE_IDENTIFIER = dev.rart.abrezo.app.NotificationServiceExtension;
+      };
+      name = Release;
+    };
+    FFFF6666FFFF6666FFFF6666 /* Release */ = {
+      isa = XCBuildConfiguration;
+      buildSettings = {
+        PRODUCT_BUNDLE_IDENTIFIER = dev.rart.abrezo.app;
+      };
+      name = Release;
+    };
+    BBBB2222BBBB2222BBBB2222 /* list */ = {
+      isa = XCConfigurationList;
+      buildConfigurations = (
+        EEEE5555EEEE5555EEEE5555 /* Release */,
+      );
+    };
+    DDDD4444DDDD4444DDDD4444 /* list */ = {
+      isa = XCConfigurationList;
+      buildConfigurations = (
+        FFFF6666FFFF6666FFFF6666 /* Release */,
+      );
+    };
+  };
+}''';
+
+        await TestHelpers.createFile(
+          tempDir,
+          'Runner.xcodeproj/project.pbxproj',
+          pbxproj,
+        );
+        final file = await TestHelpers.createFile(
+          tempDir,
+          'Runner/Info.plist',
+          variablePlist,
+        );
+
+        final result = IosParser.parseInfoPlist(file);
+
+        expect(result, isNotNull);
+        expect(result!.bundleIdentifier, 'dev.rart.abrezo.app');
+      });
+
       test('should extract team ID from pbxproj', () async {
         final pbxproj = '// !\$*UTF8*\$!\n'
             '{\n'
