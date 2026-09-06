@@ -348,6 +348,7 @@ class VerifyCommand {
               VerificationResult(
                 checkName: 'ULink API Connection',
                 status: VerificationStatus.skipped,
+                blocksFullVerification: true,
                 message: 'Invalid project selection',
                 fixSuggestion:
                     'Run the command again and select a valid project',
@@ -430,6 +431,7 @@ class VerifyCommand {
         VerificationResult(
           checkName: 'Dashboard cross-check (bundle id, team id, package, fingerprints, AASA & assetlinks.json)',
           status: VerificationStatus.skipped,
+          blocksFullVerification: true,
           message: effectiveProjectId == null
               ? 'Not authenticated — local files were checked, but they were NOT '
                   'compared against your ULink dashboard config, and the hosted '
