@@ -73,6 +73,7 @@ void main() {
           projectType: ProjectType.flutter,
           bundleIdentifier: 'com.example.app',
           urlSchemes: ['myapp', 'myapp-dev'],
+          iosUrlSchemes: ['myapp', 'myapp-dev'],
         );
 
         final results = IosValidator.validate(tempDir.path, config);
@@ -82,6 +83,34 @@ void main() {
         );
         expect(schemeResult.status, VerificationStatus.success);
         expect(schemeResult.message, contains('myapp'));
+      });
+
+      test(
+          'reports only iOS schemes, not Android-only schemes pooled from a '
+          'Flutter project', () async {
+        await TestHelpers.createIosProjectStructure(
+          tempDir,
+          urlSchemes: ['iosonly'],
+        );
+
+        // Flutter parser pools iOS + Android schemes into `urlSchemes` but keeps
+        // per-platform lists. The iOS check must read iosUrlSchemes only.
+        final config = PlatformConfig(
+          projectType: ProjectType.flutter,
+          bundleIdentifier: 'com.example.app',
+          urlSchemes: ['iosonly', 'androidonly'],
+          iosUrlSchemes: ['iosonly'],
+          androidUrlSchemes: ['androidonly'],
+        );
+
+        final results = IosValidator.validate(tempDir.path, config);
+        final schemeResult = results.firstWhere(
+          (r) => r.checkName == 'iOS URL Schemes',
+        );
+
+        expect(schemeResult.status, VerificationStatus.success);
+        expect(schemeResult.message, contains('iosonly'));
+        expect(schemeResult.message, isNot(contains('androidonly')));
       });
 
       test('should return error when bundle identifier not found', () async {

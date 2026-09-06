@@ -420,14 +420,28 @@ class VerifyCommand {
           ),
         );
       }
-    } else if (effectiveProjectId == null) {
+    } else {
+      // No dashboard config was fetched (missing project ID and/or credentials).
+      // Only local files were inspected — the local config was NOT compared
+      // against the ULink dashboard, and the hosted AASA / assetlinks.json files
+      // were never fetched. Make that explicit so a green run is not mistaken for
+      // a full verification.
       results.add(
         VerificationResult(
-          checkName: 'ULink API Connection',
+          checkName: 'Dashboard cross-check (bundle id, team id, package, fingerprints, AASA & assetlinks.json)',
           status: VerificationStatus.skipped,
-          message: 'Project ID and credentials not provided',
+          message: effectiveProjectId == null
+              ? 'Not authenticated — local files were checked, but they were NOT '
+                  'compared against your ULink dashboard config, and the hosted '
+                  'well-known files were not fetched.'
+              : 'No credentials — a project is selected, but local files were NOT '
+                  'compared against the ULink dashboard config, and the hosted '
+                  'well-known files were not fetched.',
           fixSuggestion:
-              'Run "ulink login" to authenticate, or provide --project-id and --api-key',
+              'Run "ulink login" to authenticate (or pass --api-key) so verify can '
+              'compare local config against the dashboard and fetch the domain\'s '
+              'AASA / assetlinks.json. Without this, verify only confirms local '
+              'files exist — not that deep linking actually resolves.',
         ),
       );
     }

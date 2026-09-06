@@ -112,6 +112,7 @@ void main() {
           projectType: ProjectType.flutter,
           packageName: 'com.example.app',
           urlSchemes: ['myapp', 'myapp-dev'],
+          androidUrlSchemes: ['myapp', 'myapp-dev'],
         );
 
         final results = AndroidValidator.validate(tempDir.path, config);
@@ -121,6 +122,34 @@ void main() {
         );
         expect(schemeResult.status, VerificationStatus.success);
         expect(schemeResult.message, contains('myapp'));
+      });
+
+      test(
+          'reports only Android schemes, not iOS-only schemes pooled from a '
+          'Flutter project', () async {
+        await TestHelpers.createAndroidProjectStructure(
+          tempDir,
+          urlSchemes: ['androidonly'],
+        );
+
+        // Flutter parser pools iOS + Android schemes into `urlSchemes` but keeps
+        // per-platform lists. The Android check must read androidUrlSchemes only.
+        final config = PlatformConfig(
+          projectType: ProjectType.flutter,
+          packageName: 'com.example.app',
+          urlSchemes: ['iosonly', 'androidonly'],
+          iosUrlSchemes: ['iosonly'],
+          androidUrlSchemes: ['androidonly'],
+        );
+
+        final results = AndroidValidator.validate(tempDir.path, config);
+        final schemeResult = results.firstWhere(
+          (r) => r.checkName == 'Android URL Schemes',
+        );
+
+        expect(schemeResult.status, VerificationStatus.success);
+        expect(schemeResult.message, contains('androidonly'));
+        expect(schemeResult.message, isNot(contains('iosonly')));
       });
 
       test('should warn when no App Links found', () async {
@@ -226,6 +255,7 @@ void main() {
           projectType: ProjectType.flutter,
           packageName: 'com.example.app',
           urlSchemes: ['myapp'],
+          androidUrlSchemes: ['myapp'],
           appLinkHosts: ['example.com'],
         );
 

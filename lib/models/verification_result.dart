@@ -40,7 +40,10 @@ class VerificationReport {
       results.where((r) => r.status == VerificationStatus.warning).length;
   int get errorCount =>
       results.where((r) => r.status == VerificationStatus.error).length;
+  int get skippedCount =>
+      results.where((r) => r.status == VerificationStatus.skipped).length;
 
   bool get hasErrors => errorCount > 0;
   bool get hasWarnings => warningCount > 0;
+  bool get hasSkipped => skippedCount > 0;
 }

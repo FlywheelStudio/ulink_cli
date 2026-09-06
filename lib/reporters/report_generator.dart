@@ -35,6 +35,9 @@ class ReportGenerator {
     if (report.errorCount > 0) {
       parts.add(ConsoleStyle.error('✗ ${report.errorCount} error${report.errorCount > 1 ? 's' : ''}'));
     }
+    if (report.skippedCount > 0) {
+      parts.add(ConsoleStyle.dim('⊘ ${report.skippedCount} skipped'));
+    }
     buffer.writeln('${report.projectType.name} | ${parts.join('  ')}');
     buffer.writeln('');
 
@@ -44,6 +47,9 @@ class ReportGenerator {
         .toList();
     final warnings = report.results
         .where((r) => r.status == VerificationStatus.warning)
+        .toList();
+    final skipped = report.results
+        .where((r) => r.status == VerificationStatus.skipped)
         .toList();
 
     // Errors first (most important)
@@ -76,17 +82,43 @@ class ReportGenerator {
       }
     }
 
+    // Skipped checks — surface them in the default report too. A skipped check
+    // means something was NOT verified (e.g. local config was never compared
+    // against the dashboard, or the hosted AASA / assetlinks.json were not
+    // fetched), so a run with skips is not a full verification.
+    if (skipped.isNotEmpty) {
+      buffer.writeln(ConsoleStyle.dim('⊘ NOT VERIFIED:'));
+      for (final result in skipped) {
+        buffer.writeln(ConsoleStyle.dim('  ${result.checkName}'));
+        if (result.message != null) {
+          buffer.writeln(ConsoleStyle.dim('    ${result.message}'));
+        }
+        if (result.fixSuggestion != null) {
+          buffer.writeln(ConsoleStyle.info('    → ${result.fixSuggestion}'));
+        }
+        buffer.writeln('');
+      }
+    }
+
     // If no errors or warnings, show success message
-    if (errors.isEmpty && warnings.isEmpty) {
+    if (errors.isEmpty && warnings.isEmpty && skipped.isEmpty) {
       buffer.writeln(ConsoleStyle.success('All checks passed successfully!'));
       buffer.writeln('');
     }
 
     buffer.writeln(ConsoleStyle.dim('─' * 50));
 
-    // Overall status
+    // Overall status. A clean "✓ PASSED" is reserved for a full run with no
+    // skips — otherwise the result is qualified so a partial (local-only) run is
+    // never mistaken for a verified one.
     if (report.hasErrors) {
       buffer.writeln(ConsoleStyle.errorBold('✗ FAILED - Fix ${report.errorCount} error${report.errorCount > 1 ? 's' : ''} above'));
+    } else if (report.hasSkipped) {
+      final warnSuffix = report.hasWarnings
+          ? ' and ${report.warningCount} warning${report.warningCount > 1 ? 's' : ''}'
+          : '';
+      buffer.writeln(ConsoleStyle.warningBold(
+          '⚠ PARTIAL - local checks passed, but ${report.skippedCount} check${report.skippedCount > 1 ? 's were' : ' was'} skipped$warnSuffix (see above). This is NOT a full verification.'));
     } else if (report.hasWarnings) {
       buffer.writeln(ConsoleStyle.warningBold('⚠ PASSED with ${report.warningCount} warning${report.warningCount > 1 ? 's' : ''}'));
     } else {
@@ -195,6 +227,9 @@ class ReportGenerator {
     // Overall status
     if (report.hasErrors) {
       buffer.writeln(ConsoleStyle.errorBold('❌ Verification FAILED - Please fix the errors above'));
+    } else if (report.hasSkipped) {
+      buffer.writeln(ConsoleStyle.warningBold(
+          '⚠️  Verification PARTIAL - ${report.skippedCount} check${report.skippedCount > 1 ? 's' : ''} skipped (see above). This is NOT a full verification.'));
     } else if (report.hasWarnings) {
       buffer.writeln(ConsoleStyle.warningBold('⚠️  Verification completed with WARNINGS'));
     } else {
@@ -213,6 +248,7 @@ class ReportGenerator {
         'success': report.successCount,
         'warnings': report.warningCount,
         'errors': report.errorCount,
+        'skipped': report.skippedCount,
       },
       'results': report.results
           .map(
