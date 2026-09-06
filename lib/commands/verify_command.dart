@@ -348,6 +348,7 @@ class VerifyCommand {
               VerificationResult(
                 checkName: 'ULink API Connection',
                 status: VerificationStatus.skipped,
+                blocksFullVerification: true,
                 message: 'Invalid project selection',
                 fixSuggestion:
                     'Run the command again and select a valid project',
@@ -420,14 +421,50 @@ class VerifyCommand {
           ),
         );
       }
-    } else if (effectiveProjectId == null) {
+    } else {
+      // No dashboard config was fetched (missing project ID and/or credentials).
+      // Only local files were inspected — the local config was NOT compared
+      // against the ULink dashboard, and the hosted AASA / assetlinks.json files
+      // were never fetched. Make that explicit so a green run is not mistaken for
+      // a full verification.
+      // Distinguish the reasons this branch is reached. effectiveProjectId can
+      // be null even for an authenticated user (no projects, cancelled/invalid
+      // selection, or a failed project fetch), so gate the "not authenticated"
+      // wording on credentials, not on the project id.
+      final String crossCheckMessage;
+      final String crossCheckFix;
+      if (!hasCredentials) {
+        crossCheckMessage = effectiveProjectId == null
+            ? 'Not authenticated — local files were checked, but they were NOT '
+                'compared against your ULink dashboard config, and the hosted '
+                'well-known files were not fetched.'
+            : 'No credentials — a project is selected, but local files were NOT '
+                'compared against the ULink dashboard config, and the hosted '
+                'well-known files were not fetched.';
+        crossCheckFix =
+            'Run "ulink login" to authenticate (or pass --api-key) so verify can '
+            'compare local config against the dashboard and fetch the domain\'s '
+            'AASA / assetlinks.json. Without this, verify only confirms local '
+            'files exist — not that deep linking actually resolves.';
+      } else {
+        // Signed in, but no project id resolved.
+        crossCheckMessage =
+            'Signed in, but no ULink project was resolved — local files were NOT '
+            'compared against a dashboard project, and the hosted well-known '
+            'files were not fetched.';
+        crossCheckFix =
+            'Select a project with "ulink project set" (or create one at '
+            'https://ulink.ly), then re-run verify so it can compare local '
+            'config against the dashboard and fetch the domain\'s AASA / '
+            'assetlinks.json.';
+      }
       results.add(
         VerificationResult(
-          checkName: 'ULink API Connection',
+          checkName: 'Dashboard cross-check (bundle id, team id, package, fingerprints, AASA & assetlinks.json)',
           status: VerificationStatus.skipped,
-          message: 'Project ID and credentials not provided',
-          fixSuggestion:
-              'Run "ulink login" to authenticate, or provide --project-id and --api-key',
+          blocksFullVerification: true,
+          message: crossCheckMessage,
+          fixSuggestion: crossCheckFix,
         ),
       );
     }
@@ -574,9 +611,13 @@ class VerifyCommand {
           apiKey: effectiveApiKey,
         );
 
-        // Generate JSON report with passed status
+        // Generate JSON report with passed status. "passed" means a full
+        // verification: no errors AND not partial (a check that would actually
+        // verify deep linking wasn't skipped). The report also carries a
+        // separate `partial` flag, but keep `passed` consistent with the
+        // console verdict rather than reporting a partial run as passed.
         final jsonReport = ReportGenerator.generateJsonReport(report);
-        jsonReport['passed'] = !report.hasErrors;
+        jsonReport['passed'] = !report.hasErrors && !report.isPartial;
 
         await apiClient.postVerificationResults(effectiveProjectId, jsonReport);
         uploadSpinner.success('Results synced to dashboard');

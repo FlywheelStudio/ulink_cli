@@ -25,6 +25,92 @@ void main() {
         expect(result, contains('passed'));
       });
 
+      test(
+          'a skipped check is disclosed as PARTIAL, never a bare green PASS',
+          () {
+        final report = VerificationReport(
+          projectType: ProjectType.flutter,
+          results: [
+            VerificationResult(
+              checkName: 'iOS URL Schemes',
+              status: VerificationStatus.success,
+              message: 'URL schemes found: myapp',
+            ),
+            VerificationResult(
+              checkName: 'Dashboard cross-check',
+              status: VerificationStatus.skipped,
+              blocksFullVerification: true,
+              message: 'Not authenticated — local files were not compared '
+                  'against the dashboard.',
+              fixSuggestion: 'Run "ulink login".',
+            ),
+          ],
+        );
+
+        final result = ReportGenerator.generateReport(report);
+
+        // The skip must be visible and the run must not read as fully verified.
+        expect(result, contains('skipped'));
+        expect(result, contains('NOT VERIFIED'));
+        expect(result, contains('PARTIAL'));
+        expect(result, isNot(contains('All checks passed successfully!')));
+      });
+
+      test(
+          'an optional probe skip (no simulator) does not downgrade to PARTIAL',
+          () {
+        final report = VerificationReport(
+          projectType: ProjectType.flutter,
+          results: [
+            VerificationResult(
+              checkName: 'iOS URL Schemes',
+              status: VerificationStatus.success,
+              message: 'URL schemes found: myapp',
+            ),
+            VerificationResult(
+              checkName: 'Dashboard cross-check',
+              status: VerificationStatus.success,
+              message: 'Local config matches the dashboard.',
+            ),
+            // Optional environment probe — no booted simulator. Not a blocking
+            // skip, so it must not make the run read as unverified.
+            VerificationResult(
+              checkName: 'iOS Runtime Test',
+              status: VerificationStatus.skipped,
+              message: 'No booted iOS simulator available.',
+            ),
+          ],
+        );
+
+        final result = ReportGenerator.generateReport(report);
+
+        // Verdict stays green; the optional skip is disclosed but not alarming.
+        expect(result, contains('PASSED'));
+        expect(result, isNot(contains('PARTIAL')));
+        expect(result, isNot(contains('NOT VERIFIED')));
+        expect(result, contains('optional'));
+        expect(result, contains('1 optional check skipped'));
+      });
+
+      test('a clean run with no skips still reports a green PASS', () {
+        final report = VerificationReport(
+          projectType: ProjectType.flutter,
+          results: [
+            VerificationResult(
+              checkName: 'iOS URL Schemes',
+              status: VerificationStatus.success,
+              message: 'URL schemes found: myapp',
+            ),
+          ],
+        );
+
+        final result = ReportGenerator.generateReport(report);
+
+        expect(result, contains('All checks passed successfully!'));
+        expect(result, contains('PASSED'));
+        expect(result, isNot(contains('PARTIAL')));
+      });
+
       test('should generate verbose report when requested', () {
         final report = VerificationReport(
           projectType: ProjectType.flutter,

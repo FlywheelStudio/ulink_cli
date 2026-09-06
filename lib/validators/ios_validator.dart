@@ -39,9 +39,13 @@ class IosValidator {
       ),
     );
 
-    // Check CFBundleURLTypes
+    // Check CFBundleURLTypes.
+    // Use the iOS-specific scheme list, not the combined `urlSchemes` (which
+    // for Flutter pools iOS + Android schemes together). Reporting the pooled
+    // list here made the "iOS URL Schemes" line show Android-only schemes.
     if (platformConfig != null) {
-      if (platformConfig.urlSchemes.isEmpty) {
+      final iosSchemes = platformConfig.iosUrlSchemes;
+      if (iosSchemes.isEmpty) {
         results.add(
           VerificationResult(
             checkName: 'iOS URL Schemes',
@@ -56,8 +60,7 @@ class IosValidator {
           VerificationResult(
             checkName: 'iOS URL Schemes',
             status: VerificationStatus.success,
-            message:
-                'URL schemes found: ${platformConfig.urlSchemes.join(", ")}',
+            message: 'URL schemes found: ${iosSchemes.join(", ")}',
           ),
         );
       }

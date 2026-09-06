@@ -61,8 +61,13 @@ class AndroidValidator {
         );
       }
 
-      // Check URL schemes (custom schemes)
-      if (platformConfig.urlSchemes.isEmpty) {
+      // Check URL schemes (custom schemes).
+      // Use the Android-specific scheme list, not the combined `urlSchemes`
+      // (which for Flutter pools iOS + Android schemes together). Reporting the
+      // pooled list here made the "Android URL Schemes" line show iOS-only
+      // schemes.
+      final androidSchemes = platformConfig.androidUrlSchemes;
+      if (androidSchemes.isEmpty) {
         results.add(
           VerificationResult(
             checkName: 'Android URL Schemes',
@@ -77,8 +82,7 @@ class AndroidValidator {
           VerificationResult(
             checkName: 'Android URL Schemes',
             status: VerificationStatus.success,
-            message:
-                'URL schemes found: ${platformConfig.urlSchemes.join(", ")}',
+            message: 'URL schemes found: ${androidSchemes.join(", ")}',
           ),
         );
       }

@@ -35,6 +35,9 @@ class ReportGenerator {
     if (report.errorCount > 0) {
       parts.add(ConsoleStyle.error('✗ ${report.errorCount} error${report.errorCount > 1 ? 's' : ''}'));
     }
+    if (report.skippedCount > 0) {
+      parts.add(ConsoleStyle.dim('⊘ ${report.skippedCount} skipped'));
+    }
     buffer.writeln('${report.projectType.name} | ${parts.join('  ')}');
     buffer.writeln('');
 
@@ -44,6 +47,9 @@ class ReportGenerator {
         .toList();
     final warnings = report.results
         .where((r) => r.status == VerificationStatus.warning)
+        .toList();
+    final skipped = report.results
+        .where((r) => r.status == VerificationStatus.skipped)
         .toList();
 
     // Errors first (most important)
@@ -76,21 +82,70 @@ class ReportGenerator {
       }
     }
 
+    // Blocking skips: a check that would actually verify deep linking (chiefly
+    // the dashboard cross-check — comparing local config against the ULink
+    // project and fetching the hosted AASA / assetlinks.json) was NOT performed,
+    // so the run is only a partial verification.
+    final notVerified = skipped.where((r) => r.blocksFullVerification).toList();
+    // Optional probes that simply could not run in this environment (no booted
+    // simulator, no `adb`, managed-Expo with no native dirs). These do NOT
+    // downgrade the verdict.
+    final optionalSkipped =
+        skipped.where((r) => !r.blocksFullVerification).toList();
+
+    if (notVerified.isNotEmpty) {
+      buffer.writeln(ConsoleStyle.dim('⊘ NOT VERIFIED:'));
+      for (final result in notVerified) {
+        buffer.writeln(ConsoleStyle.dim('  ${result.checkName}'));
+        if (result.message != null) {
+          buffer.writeln(ConsoleStyle.dim('    ${result.message}'));
+        }
+        if (result.fixSuggestion != null) {
+          buffer.writeln(ConsoleStyle.info('    → ${result.fixSuggestion}'));
+        }
+        buffer.writeln('');
+      }
+    }
+
+    if (optionalSkipped.isNotEmpty) {
+      buffer.writeln(
+          ConsoleStyle.dim('⊘ SKIPPED (optional — did not affect the result):'));
+      for (final result in optionalSkipped) {
+        buffer.writeln(ConsoleStyle.dim('  ${result.checkName}'));
+        if (result.message != null) {
+          buffer.writeln(ConsoleStyle.dim('    ${result.message}'));
+        }
+        buffer.writeln('');
+      }
+    }
+
     // If no errors or warnings, show success message
-    if (errors.isEmpty && warnings.isEmpty) {
+    if (errors.isEmpty && warnings.isEmpty && skipped.isEmpty) {
       buffer.writeln(ConsoleStyle.success('All checks passed successfully!'));
       buffer.writeln('');
     }
 
     buffer.writeln(ConsoleStyle.dim('─' * 50));
 
-    // Overall status
+    // Overall status. A clean "✓ PASSED" is reserved for a full run — one where
+    // no check that would actually verify deep linking was skipped. A skipped
+    // dashboard cross-check downgrades to PARTIAL; optional probes that could
+    // not run (no simulator/adb) are noted but never change the verdict.
+    final optionalNote = report.optionalSkippedCount > 0
+        ? ' (${report.optionalSkippedCount} optional check${report.optionalSkippedCount > 1 ? 's' : ''} skipped)'
+        : '';
     if (report.hasErrors) {
       buffer.writeln(ConsoleStyle.errorBold('✗ FAILED - Fix ${report.errorCount} error${report.errorCount > 1 ? 's' : ''} above'));
+    } else if (report.isPartial) {
+      final warnSuffix = report.hasWarnings
+          ? ' and ${report.warningCount} warning${report.warningCount > 1 ? 's' : ''}'
+          : '';
+      buffer.writeln(ConsoleStyle.warningBold(
+          '⚠ PARTIAL - local checks passed, but ${report.incompleteCount} check${report.incompleteCount > 1 ? 's were' : ' was'} not verified$warnSuffix (see above). This is NOT a full verification.'));
     } else if (report.hasWarnings) {
-      buffer.writeln(ConsoleStyle.warningBold('⚠ PASSED with ${report.warningCount} warning${report.warningCount > 1 ? 's' : ''}'));
+      buffer.writeln(ConsoleStyle.warningBold('⚠ PASSED with ${report.warningCount} warning${report.warningCount > 1 ? 's' : ''}$optionalNote'));
     } else {
-      buffer.writeln(ConsoleStyle.successBold('✓ PASSED'));
+      buffer.writeln(ConsoleStyle.successBold('✓ PASSED$optionalNote'));
     }
 
     return buffer.toString();
@@ -195,6 +250,9 @@ class ReportGenerator {
     // Overall status
     if (report.hasErrors) {
       buffer.writeln(ConsoleStyle.errorBold('❌ Verification FAILED - Please fix the errors above'));
+    } else if (report.isPartial) {
+      buffer.writeln(ConsoleStyle.warningBold(
+          '⚠️  Verification PARTIAL - ${report.incompleteCount} check${report.incompleteCount > 1 ? 's were' : ' was'} not verified (see above). This is NOT a full verification.'));
     } else if (report.hasWarnings) {
       buffer.writeln(ConsoleStyle.warningBold('⚠️  Verification completed with WARNINGS'));
     } else {
@@ -213,7 +271,11 @@ class ReportGenerator {
         'success': report.successCount,
         'warnings': report.warningCount,
         'errors': report.errorCount,
+        'skipped': report.skippedCount,
+        // Skips that make the run a partial verification (a subset of skipped).
+        'incomplete': report.incompleteCount,
       },
+      'partial': report.isPartial,
       'results': report.results
           .map(
             (r) => {
