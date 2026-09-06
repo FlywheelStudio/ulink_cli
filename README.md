@@ -133,6 +133,25 @@ ulink project show
 ulink project show --path ./my-app
 ```
 
+### `ulink api-keys`
+
+Manage a project's client SDK API keys (the key you pass to
+`UlinkSDK.initialize`). Requires a signed-in user — run `ulink login` first.
+The project is taken from the saved directory config, or pass `--project-id`.
+
+```bash
+# List keys (metadata only; the secret is never shown here)
+ulink api-keys list
+
+# Create a key — the full value is printed once and cannot be retrieved again
+ulink api-keys create --name "Production"
+
+# Revoke a key by id
+ulink api-keys revoke <keyId>
+```
+
+Add `--json` to `list`/`create` for machine-readable output.
+
 ### `ulink verify`
 
 Verify your project's deep link configuration:

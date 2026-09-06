@@ -131,6 +131,92 @@ class ULinkApiClient {
     return response;
   }
 
+  /// Execute a DELETE request with automatic 401 retry
+  Future<http.Response> _deleteWithRetry(
+      Uri url, Map<String, String> headers) async {
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      final retryHeaders = await _refreshAndBuildHeaders();
+      if (retryHeaders != null) {
+        response = await http.delete(url, headers: retryHeaders);
+      }
+    }
+    return response;
+  }
+
+  /// List API keys for a project. Returns raw key metadata objects (name,
+  /// prefix, creation date) — the full secret is never returned by this route.
+  Future<List<Map<String, dynamic>>> listApiKeys(String projectId) async {
+    final url = Uri.parse(
+        '$baseUrl/api-keys?projectId=${Uri.encodeQueryComponent(projectId)}');
+    final headers = await _authHeaders();
+    final response = await _getWithRetry(url, headers);
+    _ensureApiKeyOk(response, 'list API keys');
+    final json = jsonDecode(response.body);
+    return _unwrapList(json, const ['data', 'apiKeys', 'keys'])
+        .map((e) => (e as Map).cast<String, dynamic>())
+        .toList();
+  }
+
+  /// Create an API key for a project. The response includes the full key value
+  /// exactly once — it cannot be retrieved again afterwards.
+  Future<Map<String, dynamic>> createApiKey(
+      String projectId, String name) async {
+    final url = Uri.parse(
+        '$baseUrl/api-keys?projectId=${Uri.encodeQueryComponent(projectId)}');
+    final headers = await _authHeaders();
+    final response =
+        await _postWithRetry(url, headers, jsonEncode({'name': name}));
+    _ensureApiKeyOk(response, 'create API key');
+    final json = jsonDecode(response.body);
+    if (json is Map && json['data'] is Map) {
+      return (json['data'] as Map).cast<String, dynamic>();
+    }
+    return (json as Map).cast<String, dynamic>();
+  }
+
+  /// Revoke (delete) an API key by id.
+  Future<void> revokeApiKey(String keyId) async {
+    final url = Uri.parse('$baseUrl/api-keys/${Uri.encodeComponent(keyId)}');
+    final headers = await _authHeaders();
+    final response = await _deleteWithRetry(url, headers);
+    _ensureApiKeyOk(response, 'revoke API key');
+  }
+
+  /// Throw a helpful error for a non-2xx API-key response.
+  void _ensureApiKeyOk(http.Response response, String action) {
+    final code = response.statusCode;
+    if (code >= 200 && code < 300) return;
+    if (code == 401) {
+      throw Exception(
+        'Authentication failed while trying to $action. Managing API keys '
+        'requires a signed-in user — run "ulink login". (A project SDK key '
+        'passed via --api-key is not authorized to manage keys.)',
+      );
+    } else if (code == 403) {
+      throw Exception(
+        'Access forbidden while trying to $action. You may not have permission '
+        "for this project's API keys.",
+      );
+    } else if (code == 404) {
+      throw Exception(
+        'Not found while trying to $action (endpoint or key). Base URL: $baseUrl',
+      );
+    }
+    throw Exception('Failed to $action: ${response.statusCode} ${response.body}');
+  }
+
+  /// Unwrap a list that may be returned directly or under a wrapper key.
+  List<dynamic> _unwrapList(dynamic json, List<String> keys) {
+    if (json is List) return json;
+    if (json is Map) {
+      for (final k in keys) {
+        if (json[k] is List) return json[k] as List<dynamic>;
+      }
+    }
+    throw Exception('Unexpected response format from API keys endpoint');
+  }
+
   /// Get project configuration
   Future<ProjectConfig> getProjectConfig(String projectId) async {
     final url = Uri.parse('$baseUrl/projects/$projectId');
