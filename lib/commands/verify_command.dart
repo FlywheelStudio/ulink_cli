@@ -28,9 +28,15 @@ class VerifyCommand {
   final String baseUrl;
   final bool verbose;
 
+  /// When true, a run that skipped checks (e.g. the dashboard cross-checks
+  /// because no credentials were available) exits non-zero instead of 0, so a
+  /// partial verification never passes silently in CI.
+  final bool strict;
+
   VerifyCommand({
     required this.baseUrl,
     this.verbose = false,
+    this.strict = false,
   });
 
   /// Execute verification
@@ -631,9 +637,21 @@ class VerifyCommand {
       }
     }
 
-    // Exit with appropriate code
+    // Exit with appropriate code.
+    //   0 = fully verified (or passed with warnings; optional probe skips are OK)
+    //   1 = errors
+    //   2 = --strict and the run was only a partial verification (a check that
+    //       would actually verify deep linking, e.g. the dashboard cross-check,
+    //       was not performed). Optional probe skips (no simulator/adb) do NOT
+    //       trip --strict, so a CI run without a device still exits 0.
     if (report.hasErrors) {
       exit(1);
+    } else if (strict && report.isPartial) {
+      if (verbose) {
+        stderr.writeln(ConsoleStyle.warning(
+            '--strict: exiting 2 because ${report.incompleteCount} check(s) were not verified.'));
+      }
+      exit(2);
     } else {
       exit(0);
     }

@@ -165,7 +165,25 @@ ulink verify --path ./my-app
 
 # Verbose output
 ulink verify -v
+
+# CI: fail if the run wasn't a full verification (dashboard cross-check skipped)
+ulink verify --strict
 ```
+
+The dashboard cross-checks (comparing local config against your ULink project
+and fetching the hosted AASA / assetlinks.json) only run when authenticated
+(`ulink login` or `--api-key`). Without them the run is reported as PARTIAL and,
+by default, still exits `0` so unauthenticated smoke tests don't break. Pass
+`--strict` to make a partial run fail instead.
+
+Only skips that mean something was not verified (chiefly the dashboard
+cross-check) make a run PARTIAL. Optional environment probes that simply
+couldn't run — no booted simulator, no `adb`, or a managed-Expo project with no
+native directories — are reported as optional skips, do not downgrade the
+verdict, and do not trip `--strict`.
+
+Exit codes: `0` fully verified (or passed with warnings; optional probes may be
+skipped), `1` errors, `2` `--strict` and the run was only a partial verification.
 
 ### `ulink fix`
 

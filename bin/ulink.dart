@@ -32,6 +32,10 @@ void main(List<String> args) async {
         ..addOption('ios', help: 'Assert this iOS App ID (TEAMID.bundleId)')
         ..addOption('android',
             help: 'Assert this Android app (package[:SHA256FP])')
+        ..addFlag('strict',
+            negatable: false,
+            help: 'Exit non-zero (2) if any checks were skipped '
+                '(e.g. dashboard cross-checks when not authenticated)')
         ..addFlag('json',
             negatable: false,
             help: 'Print the machine-readable domain-verify result to stdout')
@@ -208,7 +212,7 @@ void main(List<String> args) async {
         exit(result.exitCode);
       }
       final projectPath = sub['path'] as String;
-      await cli.verify(projectPath);
+      await cli.verify(projectPath, strict: sub['strict'] as bool? ?? false);
     } else if (results.command!.name == 'fix') {
       final projectPath = results.command!['path'] as String;
       await cli.fix(projectPath);
