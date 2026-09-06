@@ -94,6 +94,38 @@ void main(List<String> args) async {
         ),
     )
     ..addCommand(
+      'api-keys',
+      ArgParser()
+        ..addFlag('help', abbr: 'h', negatable: false)
+        ..addCommand(
+          'list',
+          ArgParser()
+            ..addOption('project-id', help: 'Project id (defaults to the saved directory project)')
+            ..addOption('path', abbr: 'p', defaultsTo: '.', help: 'Project directory')
+            ..addOption('api-key', help: 'API key override (not usually needed)')
+            ..addFlag('json', negatable: false, help: 'Print machine-readable JSON')
+            ..addFlag('help', abbr: 'h', negatable: false),
+        )
+        ..addCommand(
+          'create',
+          ArgParser()
+            ..addOption('name', abbr: 'n', help: 'Name for the new key')
+            ..addOption('project-id', help: 'Project id (defaults to the saved directory project)')
+            ..addOption('path', abbr: 'p', defaultsTo: '.', help: 'Project directory')
+            ..addOption('api-key', help: 'API key override (not usually needed)')
+            ..addFlag('json', negatable: false, help: 'Print machine-readable JSON')
+            ..addFlag('help', abbr: 'h', negatable: false),
+        )
+        ..addCommand(
+          'revoke',
+          ArgParser()
+            ..addOption('project-id', help: 'Project id (defaults to the saved directory project)')
+            ..addOption('path', abbr: 'p', defaultsTo: '.', help: 'Project directory')
+            ..addOption('api-key', help: 'API key override (not usually needed)')
+            ..addFlag('help', abbr: 'h', negatable: false),
+        ),
+    )
+    ..addCommand(
       'project',
       ArgParser()
         ..addCommand(
@@ -135,6 +167,7 @@ void main(List<String> args) async {
     print('  login     Authenticate with ULink (browser, email/password, or API key)');
     print('  logout    Clear stored credentials');
     print('  project   Manage project selection for current directory');
+    print('  api-keys  Manage client SDK API keys (list/create/revoke)');
     print('  import    Migrate Firebase Dynamic Links to ULink (import firebase)');
     print('  resolve   Show where a ULink short URL resolves per platform');
     print('  version   Show version information\n');
@@ -223,6 +256,33 @@ void main(List<String> args) async {
     } else if (results.command!.name == 'version') {
       print(ULinkVersion.versionInfo);
       exit(0);
+    } else if (results.command!.name == 'api-keys') {
+      final sub = results.command!.command;
+      if (sub == null) {
+        if (results.command!['help'] as bool? ?? false) {
+          await ApiKeysCommand(baseUrl: baseUrl)
+              .run(ApiKeysOptions(action: 'list', help: true));
+          exit(0);
+        }
+        stderr.writeln('Usage: ulink api-keys <list|create|revoke>');
+        stderr.writeln('  list    - List a project\'s API keys');
+        stderr.writeln('  create  - Create a new API key (shown once)');
+        stderr.writeln('  revoke  - Revoke an API key by id');
+        exit(2);
+      }
+      final keyId = sub.rest.isNotEmpty ? sub.rest.first : null;
+      final opts = ApiKeysOptions(
+        action: sub.name!,
+        projectId: sub['project-id'] as String?,
+        projectPath: sub['path'] as String? ?? '.',
+        name: sub.name == 'create' ? sub['name'] as String? : null,
+        keyId: sub.name == 'revoke' ? keyId : null,
+        apiKey: sub['api-key'] as String?,
+        json: sub.name == 'revoke' ? false : (sub['json'] as bool? ?? false),
+        help: sub['help'] as bool? ?? false,
+      );
+      final result = await ApiKeysCommand(baseUrl: baseUrl).run(opts);
+      exit(result.exitCode);
     } else if (results.command!.name == 'project') {
       final subcommand = results.command!.command;
       if (subcommand == null) {
