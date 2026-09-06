@@ -165,7 +165,12 @@ class IosParser {
 
       String? listUuid;
       for (final obj in _objectsByIsa(content, 'PBXNativeTarget')) {
-        if (obj.contains('com.apple.product-type.application')) {
+        // Match the exact quoted product type. A substring match would also
+        // catch `...application.watchapp2` and `...application.on-demand-
+        // install-capable` (App Clip), letting a watch app or clip masquerade
+        // as the main app and yield the wrong bundle id. Xcode always writes
+        // productType double-quoted, so the trailing quote makes this exact.
+        if (obj.contains('"com.apple.product-type.application"')) {
           listUuid = _firstUuid(obj, 'buildConfigurationList');
           break;
         }

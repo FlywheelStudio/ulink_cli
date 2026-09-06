@@ -367,6 +367,71 @@ void main() {
         expect(result!.bundleIdentifier, 'dev.rart.abrezo.app');
       });
 
+      test(
+          'falls back to the real application target, not a watch app or clip, '
+          'when no INFOPLIST_FILE points at the plist', () async {
+        // A Watch App (product-type.application.watchapp2) is listed BEFORE the
+        // real app. A substring match on "com.apple.product-type.application"
+        // would pick the watch app and resolve the wrong bundle id.
+        const pbxproj = '''// !\$*UTF8*\$!
+{
+  objects = {
+    AAAA1111AAAA1111AAAA1111 /* WatchApp */ = {
+      isa = PBXNativeTarget;
+      buildConfigurationList = BBBB2222BBBB2222BBBB2222 /* list */;
+      productType = "com.apple.product-type.application.watchapp2";
+    };
+    CCCC3333CCCC3333CCCC3333 /* Runner */ = {
+      isa = PBXNativeTarget;
+      buildConfigurationList = DDDD4444DDDD4444DDDD4444 /* list */;
+      productType = "com.apple.product-type.application";
+    };
+    EEEE5555EEEE5555EEEE5555 /* Release */ = {
+      isa = XCBuildConfiguration;
+      buildSettings = {
+        PRODUCT_BUNDLE_IDENTIFIER = dev.rart.abrezo.app.watchkitapp;
+      };
+      name = Release;
+    };
+    FFFF6666FFFF6666FFFF6666 /* Release */ = {
+      isa = XCBuildConfiguration;
+      buildSettings = {
+        PRODUCT_BUNDLE_IDENTIFIER = dev.rart.abrezo.app;
+      };
+      name = Release;
+    };
+    BBBB2222BBBB2222BBBB2222 /* list */ = {
+      isa = XCConfigurationList;
+      buildConfigurations = (
+        EEEE5555EEEE5555EEEE5555 /* Release */,
+      );
+    };
+    DDDD4444DDDD4444DDDD4444 /* list */ = {
+      isa = XCConfigurationList;
+      buildConfigurations = (
+        FFFF6666FFFF6666FFFF6666 /* Release */,
+      );
+    };
+  };
+}''';
+
+        await TestHelpers.createFile(
+          tempDir,
+          'Runner.xcodeproj/project.pbxproj',
+          pbxproj,
+        );
+        final file = await TestHelpers.createFile(
+          tempDir,
+          'Runner/Info.plist',
+          variablePlist,
+        );
+
+        final result = IosParser.parseInfoPlist(file);
+
+        expect(result, isNotNull);
+        expect(result!.bundleIdentifier, 'dev.rart.abrezo.app');
+      });
+
       test('should extract team ID from pbxproj', () async {
         final pbxproj = '// !\$*UTF8*\$!\n'
             '{\n'
