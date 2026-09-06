@@ -119,6 +119,8 @@ void main(List<String> args) async {
         ..addCommand(
           'revoke',
           ArgParser()
+            ..addOption('project-id', help: 'Project id (defaults to the saved directory project)')
+            ..addOption('path', abbr: 'p', defaultsTo: '.', help: 'Project directory')
             ..addOption('api-key', help: 'API key override (not usually needed)')
             ..addFlag('help', abbr: 'h', negatable: false),
         ),
@@ -271,8 +273,8 @@ void main(List<String> args) async {
       final keyId = sub.rest.isNotEmpty ? sub.rest.first : null;
       final opts = ApiKeysOptions(
         action: sub.name!,
-        projectId: sub.name == 'revoke' ? null : sub['project-id'] as String?,
-        projectPath: sub.name == 'revoke' ? '.' : (sub['path'] as String? ?? '.'),
+        projectId: sub['project-id'] as String?,
+        projectPath: sub['path'] as String? ?? '.',
         name: sub.name == 'create' ? sub['name'] as String? : null,
         keyId: sub.name == 'revoke' ? keyId : null,
         apiKey: sub['api-key'] as String?,

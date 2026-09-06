@@ -175,9 +175,12 @@ class ULinkApiClient {
     return (json as Map).cast<String, dynamic>();
   }
 
-  /// Revoke (delete) an API key by id.
-  Future<void> revokeApiKey(String keyId) async {
-    final url = Uri.parse('$baseUrl/api-keys/${Uri.encodeComponent(keyId)}');
+  /// Revoke (delete) an API key by id. The backend resolves the owning project
+  /// from `?projectId=` (the CLI's user token carries no project scope), so
+  /// [projectId] is required — without it the route returns 400.
+  Future<void> revokeApiKey(String keyId, String projectId) async {
+    final url = Uri.parse('$baseUrl/api-keys/${Uri.encodeComponent(keyId)}'
+        '?projectId=${Uri.encodeQueryComponent(projectId)}');
     final headers = await _authHeaders();
     final response = await _deleteWithRetry(url, headers);
     _ensureApiKeyOk(response, 'revoke API key');
@@ -187,7 +190,11 @@ class ULinkApiClient {
   void _ensureApiKeyOk(http.Response response, String action) {
     final code = response.statusCode;
     if (code >= 200 && code < 300) return;
-    if (code == 401) {
+    if (code == 400) {
+      throw Exception(
+        'Bad request while trying to $action: ${_apiKeyErrorMessage(response)}',
+      );
+    } else if (code == 401) {
       throw Exception(
         'Authentication failed while trying to $action. Managing API keys '
         'requires a signed-in user — run "ulink login". (A project SDK key '
@@ -204,6 +211,19 @@ class ULinkApiClient {
       );
     }
     throw Exception('Failed to $action: ${response.statusCode} ${response.body}');
+  }
+
+  /// Best-effort human-readable message from a NestJS-style error body, falling
+  /// back to the raw body when it isn't the expected shape.
+  String _apiKeyErrorMessage(http.Response response) {
+    try {
+      final body = jsonDecode(response.body);
+      if (body is Map && body['message'] != null) {
+        final m = body['message'];
+        return m is List ? m.join('; ') : m.toString();
+      }
+    } catch (_) {}
+    return response.body;
   }
 
   /// Unwrap a list that may be returned directly or under a wrapper key.

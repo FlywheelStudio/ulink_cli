@@ -176,7 +176,10 @@ class ApiKeysCommand {
       return ApiKeysRunResult(2);
     }
 
-    await client.revokeApiKey(keyId);
+    final projectId = await _resolveProjectId(client, o);
+    if (projectId == null) return ApiKeysRunResult(2);
+
+    await client.revokeApiKey(keyId, projectId);
     stdout.writeln(ConsoleStyle.success('✓ Revoked API key $keyId'));
     stdout.writeln(ConsoleStyle.dim(
         'Any app still shipping this key will stop authenticating.'));
@@ -224,7 +227,7 @@ class ApiKeysCommand {
     stdout.writeln('Usage:');
     stdout.writeln('  ulink api-keys list    [--project-id <id>] [-p <dir>] [--json]');
     stdout.writeln('  ulink api-keys create  --name "<name>" [--project-id <id>] [-p <dir>] [--json]');
-    stdout.writeln('  ulink api-keys revoke  <keyId>\n');
+    stdout.writeln('  ulink api-keys revoke  <keyId> [--project-id <id>] [-p <dir>]\n');
     stdout.writeln('Notes:');
     stdout.writeln('  - Requires a signed-in user: run "ulink login" first.');
     stdout.writeln('  - The full key value is shown only once, when created.');
