@@ -2,6 +2,30 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.4.0] - 2026-09-07
+
+### Added
+- **`ulink api-keys` command** (`list` / `create` / `revoke`) to manage a
+  project's client SDK API keys from the CLI. Project is resolved from
+  `--project-id`, the saved directory config, or auto-selected when the account
+  has exactly one project; the created key's secret is shown once.
+- **`ulink verify --strict`** — exits `2` when the run was only a *partial*
+  verification (a check that would actually verify deep linking, chiefly the
+  dashboard cross-check, was not performed). Optional environment probes that
+  simply could not run do not trip `--strict`.
+
+### Fixed
+- **`verify` no longer reports a bare green pass when checks were skipped.** A
+  skipped dashboard cross-check is disclosed as `PARTIAL` / `NOT VERIFIED`;
+  optional probe skips (no simulator/adb, managed-Expo with no native dirs) are
+  shown separately and do not downgrade the verdict. The "not authenticated"
+  wording is now gated on credentials, not on whether a project id resolved.
+- **`verify` no longer pools URL schemes across platforms** — iOS and Android
+  schemes are validated against their own platform config.
+- **iOS bundle-id resolution is target-scoped** for multi-target Xcode projects
+  (app + extension / watch / clip), so an extension or watch target can no
+  longer masquerade as the main app.
+
 ## [1.3.1] - 2026-08-12
 
 ### Added
