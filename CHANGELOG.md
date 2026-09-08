@@ -2,6 +2,17 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.4.1] - 2026-09-08
+
+### Fixed
+- **`verify` now finds the project root from a subdirectory.** It previously
+  inspected only the current directory, so running it from anywhere but the
+  app root failed with a generic "Could not detect project type". It now walks
+  up the tree to the nearest Flutter/iOS/Android/React Native root, and when no
+  project is found up the tree the error names what it looked for
+  (`pubspec.yaml`, `package.json`, `ios/`, or `android/`) and points at
+  `--path`.
+
 ## [1.4.0] - 2026-09-07
 
 ### Added
