@@ -41,7 +41,7 @@ class VerifyCommand {
 
   /// Execute verification
   Future<void> execute(String projectPath) async {
-    final absolutePath = path.absolute(projectPath);
+    var absolutePath = path.absolute(projectPath);
     final dir = Directory(absolutePath);
 
     if (!dir.existsSync()) {
@@ -53,17 +53,34 @@ class VerifyCommand {
     final detectSpinner = ProgressSpinner('Detecting project type...', verbose: verbose);
     detectSpinner.start();
 
-    final projectType = ProjectDetector.detectProjectType(absolutePath);
+    var projectType = ProjectDetector.detectProjectType(absolutePath);
 
+    // If the current directory isn't itself a project root, walk up the tree
+    // so `verify` still works when run from a subdirectory.
     if (projectType == ProjectType.unknown) {
-      detectSpinner.fail('Could not detect project type');
-      stderr.writeln(ConsoleStyle.error(
-        'Please run this command from your project root directory',
-      ));
-      exit(1);
+      final root = ProjectDetector.findProjectRoot(absolutePath);
+      if (root != null) {
+        absolutePath = root.path;
+        projectType = root.type;
+        detectSpinner.success(
+          'Detected ${projectType.name} project at ${root.path}',
+        );
+      } else {
+        detectSpinner.fail('Could not detect project type');
+        stderr.writeln(ConsoleStyle.error(
+          'No Flutter, iOS, Android, or React Native project found in '
+          '$absolutePath or any parent directory.',
+        ));
+        stderr.writeln(ConsoleStyle.error(
+          'Run this command from your project root (the directory containing '
+          'pubspec.yaml, package.json, ios/, or android/), or pass it with '
+          '--path.',
+        ));
+        exit(1);
+      }
+    } else {
+      detectSpinner.success('Detected ${projectType.name} project');
     }
-
-    detectSpinner.success('Detected ${projectType.name} project');
 
     final results = <VerificationResult>[];
 

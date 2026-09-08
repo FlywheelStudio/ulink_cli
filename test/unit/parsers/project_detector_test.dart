@@ -614,5 +614,40 @@ void main() {
         expect(result.allTargets, isEmpty);
       });
     });
+
+    group('findProjectRoot', () {
+      test('returns the directory itself when it is a project root', () async {
+        await TestHelpers.createFile(tempDir, 'pubspec.yaml', 'name: app');
+
+        final root = ProjectDetector.findProjectRoot(tempDir.path);
+
+        expect(root, isNotNull);
+        expect(root!.type, ProjectType.flutter);
+        expect(root.path, tempDir.path);
+      });
+
+      test('walks up to find the project root from a subdirectory', () async {
+        await TestHelpers.createFile(tempDir, 'pubspec.yaml', 'name: app');
+        final nested =
+            await Directory('${tempDir.path}/lib/features/auth').create(
+          recursive: true,
+        );
+
+        final root = ProjectDetector.findProjectRoot(nested.path);
+
+        expect(root, isNotNull);
+        expect(root!.type, ProjectType.flutter);
+        expect(root.path, tempDir.path);
+      });
+
+      test('returns null when no project is found up the tree', () async {
+        final nested =
+            await Directory('${tempDir.path}/a/b/c').create(recursive: true);
+
+        final root = ProjectDetector.findProjectRoot(nested.path);
+
+        expect(root, isNull);
+      });
+    });
   });
 }
