@@ -62,6 +62,28 @@ class ProjectDetector {
     return ProjectType.unknown;
   }
 
+  /// Walk up from [startPath] looking for a recognizable project root.
+  ///
+  /// Returns the nearest directory (starting with [startPath] itself, then
+  /// each parent) whose [detectProjectType] is not [ProjectType.unknown], so
+  /// running `verify` from a subdirectory still finds the real project root.
+  /// Returns null if no project is found before reaching the filesystem root.
+  static ({String path, ProjectType type})? findProjectRoot(String startPath) {
+    var current = path.absolute(startPath);
+    while (true) {
+      final type = detectProjectType(current);
+      if (type != ProjectType.unknown) {
+        return (path: current, type: type);
+      }
+      final parent = path.dirname(current);
+      // dirname of a filesystem root returns the root itself; stop there.
+      if (parent == current) {
+        return null;
+      }
+      current = parent;
+    }
+  }
+
   /// Find Info.plist file for iOS/Flutter projects
   static File? findInfoPlist(String projectPath, ProjectType projectType) {
     if (projectType == ProjectType.flutter) {
