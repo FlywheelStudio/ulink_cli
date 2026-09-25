@@ -2,6 +2,17 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.4.2] - 2026-09-25
+
+### Fixed
+- **Windows browser login opens the complete authorization URL.** Opening it
+  through `cmd.exe` cut off the URL at the first `&`, leaving the authorization
+  page without the required code challenge. The CLI now opens the default
+  browser without passing the URL through a command shell.
+- **The binary reports the correct release version.** The v1.4.1 binaries
+  contained the new code but still reported v1.4.0 because the embedded
+  version constant was not updated.
+
 ## [1.4.1] - 2026-09-08
 
 ### Fixed

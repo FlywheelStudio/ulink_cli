@@ -168,7 +168,14 @@ class BrowserAuthService {
         final result = await Process.run('xdg-open', [url]);
         return result.exitCode == 0;
       } else if (Platform.isWindows) {
-        final result = await Process.run('start', [url], runInShell: true);
+        // `start` runs through cmd.exe, which treats the URL's `&` characters
+        // as command separators and opens only the first query parameter.
+        // FileProtocolHandler uses the default browser without a shell.
+        final result = await Process.run(
+          'rundll32.exe',
+          ['url.dll,FileProtocolHandler', url],
+          runInShell: false,
+        );
         return result.exitCode == 0;
       }
       return false;
