@@ -102,6 +102,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify release versions match the tag
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import re
+
+          tag = os.environ['GITHUB_REF_NAME']
+          expected = tag.removeprefix('v')
+          pubspec = pathlib.Path('pubspec.yaml').read_text()
+          version_source = pathlib.Path('lib/config/version.dart').read_text()
+          versions = {
+              'pubspec.yaml': re.search(r'^version: (\S+)$', pubspec, re.M).group(1),
+              'lib/config/version.dart': re.search(r"static const String version = '([^']+)'", version_source).group(1),
+              'npm/package.json': json.loads(pathlib.Path('npm/package.json').read_text())['version'],
+          }
+          mismatches = {name: version for name, version in versions.items() if version != expected}
+          if mismatches:
+              raise SystemExit(f'{tag} does not match release versions: {mismatches}')
+          print(f'Release versions match {tag}')
+          PY
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
