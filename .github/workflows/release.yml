@@ -154,7 +154,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: ULink CLI ${{ steps.version.outputs.VERSION }}
+          name: Ulinkly CLI ${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false
           generate_release_notes: true

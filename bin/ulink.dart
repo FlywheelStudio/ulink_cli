@@ -64,9 +64,9 @@ void main(List<String> args) async {
       'resolve',
       ArgParser()
         ..addOption('url',
-            help: 'The ULink short URL (or pass it as the first argument)')
+            help: 'The Ulinkly short URL (or pass it as the first argument)')
         ..addOption('api-key',
-            help: 'ULink API key (or set ULINK_API_KEY); optional')
+            help: 'Ulinkly API key (or set ULINK_API_KEY); optional')
         ..addFlag('json',
             negatable: false,
             help: 'Print the machine-readable resolution to stdout')
@@ -81,15 +81,15 @@ void main(List<String> args) async {
             ..addOption('input',
                 abbr: 'i', help: 'Path to your FDL export ("-" for stdin)')
             ..addOption('domain',
-                abbr: 'd', help: 'Your ULink domain for the new links')
+                abbr: 'd', help: 'Your Ulinkly domain for the new links')
             ..addOption('out',
                 abbr: 'o', help: 'Output dir for manifest + link JSON')
-            ..addOption('api-key', help: 'ULink API key for --live')
+            ..addOption('api-key', help: 'Ulinkly API key for --live')
             ..addFlag('dry-run',
                 negatable: false,
-                help: 'Preview only; never calls the ULink API (default)')
+                help: 'Preview only; never calls the Ulinkly API (default)')
             ..addFlag('live',
-                negatable: false, help: 'Create links via the ULink API')
+                negatable: false, help: 'Create links via the Ulinkly API')
             ..addFlag('verify',
                 defaultsTo: true, help: 'Run routing+attribution parity checks')
             ..addFlag('json',
@@ -162,18 +162,18 @@ void main(List<String> args) async {
   UpdateChecker.showCachedUpdateMessage();
 
   if ((results['help'] as bool? ?? false) || results.command == null) {
-    print('ULink CLI - Universal Links and App Links Verification Tool');
+    print('Ulinkly CLI - Universal Links and App Links Verification Tool');
     print('Version: ${ULinkVersion.shortVersion}\n');
     print('Usage: ulink <command> [options]\n');
     print('Commands:');
     print('  verify    Verify project configuration (or a domain: verify <domain>)');
     print('  fix       Interactive mode to fix configuration issues');
-    print('  login     Authenticate with ULink (browser, email/password, or API key)');
+    print('  login     Authenticate with Ulinkly (browser, email/password, or API key)');
     print('  logout    Clear stored credentials');
     print('  project   Manage project selection for current directory');
     print('  api-keys  Manage client SDK API keys (list/create/revoke)');
-    print('  import    Migrate Firebase Dynamic Links to ULink (import firebase)');
-    print('  resolve   Show where a ULink short URL resolves per platform');
+    print('  import    Migrate Firebase Dynamic Links to Ulinkly (import firebase)');
+    print('  resolve   Show where a Ulinkly short URL resolves per platform');
     print('  version   Show version information\n');
     print('Options:');
     print(parser.usage);

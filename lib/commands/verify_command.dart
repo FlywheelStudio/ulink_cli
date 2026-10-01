@@ -133,7 +133,7 @@ class VerifyCommand {
         } catch (e) {
           // Continue without ULink bundle ID - will use fallback
           if (verbose) {
-            print(ConsoleStyle.dim('Could not fetch ULink config for target detection: $e'));
+            print(ConsoleStyle.dim('Could not fetch Ulinkly config for target detection: $e'));
           }
         }
       }
@@ -168,9 +168,9 @@ class VerifyCommand {
             .map((t) => '  • ${t.targetName} (${t.bundleId})\n    └─ ${t.entitlementsFile.path}')
             .join('\n');
         stderr.writeln(ConsoleStyle.error(
-          '\nNo local target matches ULink bundle ID: $targetBundleId\n\n'
+          '\nNo local target matches Ulinkly bundle ID: $targetBundleId\n\n'
           'Found ${discoveryResult.allTargets.length} target(s) in project:\n$targetList\n\n'
-          'Either update your ULink iOS Bundle Identifier, or ensure the correct\n'
+          'Either update your Ulinkly iOS Bundle Identifier, or ensure the correct\n'
           'target has an entitlements file with associated domains configured.',
         ));
         exit(1);
@@ -326,10 +326,10 @@ class VerifyCommand {
           fetchProjectsSpinner.warn('No projects found');
           results.add(
             VerificationResult(
-              checkName: 'ULink API Connection',
+              checkName: 'Ulinkly API Connection',
               status: VerificationStatus.warning,
               message:
-                  'No projects found. Create a project in the ULink dashboard first.',
+                  'No projects found. Create a project in the Ulinkly dashboard first.',
               fixSuggestion: 'Visit https://ulink.ly to create a project',
             ),
           );
@@ -369,7 +369,7 @@ class VerifyCommand {
           if (selectedIndex < 1 || selectedIndex > projects.length) {
             results.add(
               VerificationResult(
-                checkName: 'ULink API Connection',
+                checkName: 'Ulinkly API Connection',
                 status: VerificationStatus.skipped,
                 blocksFullVerification: true,
                 message: 'Invalid project selection',
@@ -403,7 +403,7 @@ class VerifyCommand {
         fetchProjectsSpinner.fail('Failed to fetch projects');
         results.add(
           VerificationResult(
-            checkName: 'ULink API Connection',
+            checkName: 'Ulinkly API Connection',
             status: VerificationStatus.error,
             message: 'Failed to fetch projects: $e',
             fixSuggestion:
@@ -415,7 +415,7 @@ class VerifyCommand {
 
     // Now fetch project configuration if we have a project ID
     if (effectiveProjectId != null && hasCredentials) {
-      final fetchConfigSpinner = ProgressSpinner('Fetching ULink configuration...', verbose: verbose);
+      final fetchConfigSpinner = ProgressSpinner('Fetching Ulinkly configuration...', verbose: verbose);
       fetchConfigSpinner.start();
 
       try {
@@ -424,10 +424,10 @@ class VerifyCommand {
           apiKey: effectiveApiKey,
         );
         ulinkConfig = await apiClient.getProjectConfig(effectiveProjectId);
-        fetchConfigSpinner.success('ULink configuration fetched');
+        fetchConfigSpinner.success('Ulinkly configuration fetched');
         results.add(
           VerificationResult(
-            checkName: 'ULink API Connection',
+            checkName: 'Ulinkly API Connection',
             status: VerificationStatus.success,
             message: 'Successfully fetched project configuration',
           ),
@@ -436,7 +436,7 @@ class VerifyCommand {
         fetchConfigSpinner.fail('Failed to fetch configuration');
         results.add(
           VerificationResult(
-            checkName: 'ULink API Connection',
+            checkName: 'Ulinkly API Connection',
             status: VerificationStatus.error,
             message: 'Failed to fetch project configuration: $e',
             fixSuggestion:
@@ -459,10 +459,10 @@ class VerifyCommand {
       if (!hasCredentials) {
         crossCheckMessage = effectiveProjectId == null
             ? 'Not authenticated — local files were checked, but they were NOT '
-                'compared against your ULink dashboard config, and the hosted '
+                'compared against your Ulinkly dashboard config, and the hosted '
                 'well-known files were not fetched.'
             : 'No credentials — a project is selected, but local files were NOT '
-                'compared against the ULink dashboard config, and the hosted '
+                'compared against the Ulinkly dashboard config, and the hosted '
                 'well-known files were not fetched.';
         crossCheckFix =
             'Run "ulink login" to authenticate (or pass --api-key) so verify can '
@@ -472,7 +472,7 @@ class VerifyCommand {
       } else {
         // Signed in, but no project id resolved.
         crossCheckMessage =
-            'Signed in, but no ULink project was resolved — local files were NOT '
+            'Signed in, but no Ulinkly project was resolved — local files were NOT '
             'compared against a dashboard project, and the hosted well-known '
             'files were not fetched.';
         crossCheckFix =

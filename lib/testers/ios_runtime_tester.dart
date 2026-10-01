@@ -149,7 +149,7 @@ class IosRuntimeTester {
             fixSuggestion: 'Check that:\n'
                 '  1. AASA file is accessible: https://$domain/.well-known/apple-app-site-association\n'
                 '  2. App entitlements include the domain\n'
-                '  3. Domain is verified in ULink dashboard',
+                '  3. Domain is verified in Ulinkly dashboard',
             details: {
               'domain': domain,
               'bundleIdentifier': bundleIdentifier,

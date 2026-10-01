@@ -53,7 +53,7 @@ class LoginCommand {
 
   /// Login using browser-based authentication
   Future<void> _loginWithBrowser() async {
-    print('🔐 ULink CLI Login (Browser)\n');
+    print('🔐 Ulinkly CLI Login (Browser)\n');
 
     // Use embedded Supabase configuration
     String supabaseUrl = ULinkConstants.supabaseUrl;
@@ -104,7 +104,7 @@ class LoginCommand {
 
   /// Login with email and password
   Future<void> _loginWithEmailPassword() async {
-    print('🔐 ULink CLI Login\n');
+    print('🔐 Ulinkly CLI Login\n');
 
     // Use embedded Supabase configuration (embedded in binary for security)
     // Fallback to environment variables for development/testing
@@ -172,7 +172,7 @@ class LoginCommand {
 
   /// Login with API key
   Future<void> _loginWithApiKey() async {
-    print('🔑 ULink CLI Login (API Key)\n');
+    print('🔑 Ulinkly CLI Login (API Key)\n');
 
     stdout.write('API Key: ');
     final apiKey = _readPassword(); // Use password input to hide API key

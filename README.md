@@ -1,10 +1,10 @@
-# ULink CLI
+# Ulinkly CLI
 
-CLI tool for verifying and managing universal links (iOS) and app links (Android) configuration for ULink projects.
+CLI tool for verifying and managing universal links (iOS) and app links (Android) configuration for Ulinkly projects.
 
 ## AI-Assisted Setup (Recommended)
 
-If you use Claude Code, Cursor, Codex, or another AI coding agent, the easiest way to use the ULink CLI is to let your AI agent drive it. Install the ULink onboarding skill in one command:
+If you use Claude Code, Cursor, Codex, or another AI coding agent, the easiest way to use the Ulinkly CLI is to let your AI agent drive it. Install the Ulinkly onboarding skill in one command:
 
 ```bash
 npx skills add https://ulink.ly
@@ -69,13 +69,13 @@ Download binaries directly from [GitHub Releases](https://github.com/FlywheelStu
 ## Quick Start
 
 ```bash
-# 1. Login to your ULink account
+# 1. Login to your Ulinkly account
 ulink login
 
 # 2. Navigate to your project directory
 cd /path/to/your/app
 
-# 3. Link to your ULink project
+# 3. Link to your Ulinkly project
 ulink project set
 
 # 4. Verify your configuration
@@ -86,7 +86,7 @@ ulink verify
 
 ### `ulink login`
 
-Authenticate with your ULink account. Supports three authentication methods:
+Authenticate with your Ulinkly account. Supports three authentication methods:
 
 ```bash
 # Browser-based login (default, recommended)
@@ -109,7 +109,7 @@ ulink logout
 
 ### `ulink project set`
 
-Link the current directory to a ULink project:
+Link the current directory to a Ulinkly project:
 
 ```bash
 # Interactive project selection
@@ -170,7 +170,7 @@ ulink verify -v
 ulink verify --strict
 ```
 
-The dashboard cross-checks (comparing local config against your ULink project
+The dashboard cross-checks (comparing local config against your Ulinkly project
 and fetching the hosted AASA / assetlinks.json) only run when authenticated
 (`ulink login` or `--api-key`). Without them the run is reported as PARTIAL and,
 by default, still exits `0` so unauthenticated smoke tests don't break. Pass
@@ -199,8 +199,8 @@ ulink fix --path ./my-app
 
 ### `ulink import firebase`
 
-Migrate your Firebase Dynamic Links (FDL) to ULink. Parses an FDL export,
-recreates each link under your ULink domain, and verifies routing + attribution
+Migrate your Firebase Dynamic Links (FDL) to Ulinkly. Parses an FDL export,
+recreates each link under your Ulinkly domain, and verifies routing + attribution
 parity for every link.
 
 ```bash
@@ -222,10 +222,10 @@ Use `-` for `--input` to read from stdin.
 | Option | Short | Description |
 |--------|-------|-------------|
 | `--input` | `-i` | Path to your FDL export (`-` for stdin). **Required.** |
-| `--domain` | `-d` | Your ULink domain for the new links. **Required.** |
+| `--domain` | `-d` | Your Ulinkly domain for the new links. **Required.** |
 | `--out` | `-o` | Output dir for the manifest + per-link JSON (default `./ulink-import`). |
-| `--live` | | Create links via the ULink API (needs `--api-key`/`ULINK_API_KEY`). |
-| `--api-key` | | ULink API key for `--live` (or set `ULINK_API_KEY`). |
+| `--live` | | Create links via the Ulinkly API (needs `--api-key`/`ULINK_API_KEY`). |
+| `--api-key` | | Ulinkly API key for `--live` (or set `ULINK_API_KEY`). |
 | `--dry-run` | | Preview only; never calls the API (default until `--live`). |
 | `--no-verify` | | Skip routing + attribution parity checks (on by default). |
 | `--json` | | Print the manifest as JSON to stdout (for piping). |
@@ -236,7 +236,7 @@ parameters so they reach your app on open.
 
 ### `ulink resolve`
 
-Show where a ULink short URL resolves on each platform (iOS / iPad / Android /
+Show where a Ulinkly short URL resolves on each platform (iOS / iPad / Android /
 desktop), plus the in-app deep link and any attribution parameters the link
 forwards. Read-only: it never creates or mutates anything — it just reads back
 how a live link routes via `GET /sdk/resolve`.
@@ -251,8 +251,8 @@ ulink resolve acme.ulink.app/promo-spring --json
 
 | Option | Description |
 |--------|-------------|
-| `--url` | The ULink short URL (or pass it as the first positional argument). |
-| `--api-key` | ULink API key (or set `ULINK_API_KEY`). Optional — only needed to read a link's forwarded attribution parameters, which are visible to the owning app. |
+| `--url` | The Ulinkly short URL (or pass it as the first positional argument). |
+| `--api-key` | Ulinkly API key (or set `ULINK_API_KEY`). Optional — only needed to read a link's forwarded attribution parameters, which are visible to the owning app. |
 | `--json` | Print the machine-readable resolution to stdout. |
 
 Exit codes: `0` resolved, `1` not found / unreachable / API error, `2` bad usage.
@@ -291,8 +291,8 @@ ulink --version
 - **Flutter**: Both iOS and Android configurations
 - **React Native / Expo**: Both iOS and Android native config when present (bare RN or after `expo prebuild`); managed Expo projects are verified via the config plugin in `app.json`
 
-### 3. ULink Project Configuration
-- Fetches project configuration from ULink API
+### 3. Ulinkly Project Configuration
+- Fetches project configuration from Ulinkly API
 - Cross-references with local configuration
 - Validates bundle IDs, package names, and domains
 
@@ -335,10 +335,10 @@ ulink fix -v
 ## Troubleshooting
 
 ### "Not authenticated" error
-Run `ulink login` to authenticate with your ULink account.
+Run `ulink login` to authenticate with your Ulinkly account.
 
 ### "No project linked" error
-Run `ulink project set` to link your directory to a ULink project.
+Run `ulink project set` to link your directory to a Ulinkly project.
 
 ### Verification failures
 Run `ulink verify -v` for verbose output to see detailed error messages.

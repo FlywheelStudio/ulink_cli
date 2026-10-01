@@ -18,15 +18,15 @@ import '../api/sdk_links_client.dart';
 import '../utils/console_style.dart';
 
 const String resolveUsage = '''
-ulink resolve — show where a ULink short URL resolves per platform
+ulink resolve — show where a Ulinkly short URL resolves per platform
 
 Usage
   ulink resolve <https://your.ulink.app/slug> [options]
   ulink resolve --url <shortUrl>
 
 Options
-  --url <shortUrl>       The ULink short URL (or pass it as the first argument).
-  --api-key <key>        ULink API key (or set ULINK_API_KEY). Optional; needed
+  --url <shortUrl>       The Ulinkly short URL (or pass it as the first argument).
+  --api-key <key>        Ulinkly API key (or set ULINK_API_KEY). Optional; needed
                          only to read a link's forwarded attribution parameters.
   --json                 Print the machine-readable resolution to stdout.
   --help, -h             Show this help.
@@ -214,21 +214,21 @@ class ResolveCommand {
 
     final shortUrl = (opts.url ?? '').trim();
     if (shortUrl.isEmpty) {
-      _Log.err('Missing the ULink short URL. Usage: `ulink resolve <url>` (see --help).');
+      _Log.err('Missing the Ulinkly short URL. Usage: `ulink resolve <url>` (see --help).');
       return ResolveRunResult(2, null);
     }
 
     final apiKey = opts.apiKey ?? Platform.environment['ULINK_API_KEY'];
-    _Log.step('Resolving ${ConsoleStyle.bold(shortUrl)} via the live ULink edge');
+    _Log.step('Resolving ${ConsoleStyle.bold(shortUrl)} via the live Ulinkly edge');
 
     final r = await client.resolve(shortUrl, apiKey: apiKey);
 
     if (!r.ok) {
       if (r.status == 404) {
-        _Log.err('Not found (404): no ULink domain or link matched ${ConsoleStyle.bold(shortUrl)}.');
-        _Log.info(ConsoleStyle.dim('    Check the domain is a live ULink domain and the slug exists.'));
+        _Log.err('Not found (404): no Ulinkly domain or link matched ${ConsoleStyle.bold(shortUrl)}.');
+        _Log.info(ConsoleStyle.dim('    Check the domain is a live Ulinkly domain and the slug exists.'));
       } else if (r.status == 0) {
-        _Log.err('Could not reach the ULink edge: ${r.error}');
+        _Log.err('Could not reach the Ulinkly edge: ${r.error}');
       } else {
         _Log.err('Resolve failed (HTTP ${r.status}): ${r.error}');
       }

@@ -21,7 +21,7 @@ class ReportGenerator {
 
     // Header with summary on one line
     buffer.writeln('');
-    buffer.writeln(ConsoleStyle.infoBold('ULink Verification'));
+    buffer.writeln(ConsoleStyle.infoBold('Ulinkly Verification'));
     buffer.writeln(ConsoleStyle.dim('─' * 50));
 
     // Compact summary line
@@ -157,7 +157,7 @@ class ReportGenerator {
     final buffer = StringBuffer();
 
     buffer.writeln(ConsoleStyle.dim('=' * 80));
-    buffer.writeln(ConsoleStyle.infoBold('ULink Configuration Verification Report'));
+    buffer.writeln(ConsoleStyle.infoBold('Ulinkly Configuration Verification Report'));
     buffer.writeln(ConsoleStyle.dim('=' * 80));
     buffer.writeln('Project Type: ${report.projectType.name}');
     buffer.writeln(ConsoleStyle.dim('Timestamp: ${report.timestamp.toIso8601String()}'));

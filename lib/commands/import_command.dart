@@ -14,7 +14,7 @@ import '../import/import_parity.dart';
 import '../utils/console_style.dart';
 
 const String importFirebaseUsage = '''
-ulink import firebase — migrate Firebase Dynamic Links to ULink
+ulink import firebase — migrate Firebase Dynamic Links to Ulinkly
 
 Usage
   ulink import firebase --input <export> --domain <your.ulink.app> [options]
@@ -24,14 +24,14 @@ Required
                          { "links": [...] }, a newline-delimited list of
                          *.page.link URLs, or a CSV with a header row of your
                          link inventory). Use "-" to read from stdin.
-  --domain, -d <domain>  Your ULink domain that the new links live under.
+  --domain, -d <domain>  Your Ulinkly domain that the new links live under.
 
 Options
   --out, -o <dir>        Write per-link JSON + a manifest here (default ./ulink-import).
-  --dry-run              Preview only; never calls the ULink API (default ON
+  --dry-run              Preview only; never calls the Ulinkly API (default ON
                          until --live is passed).
-  --live                 Create links via the ULink API (needs --api-key/ULINK_API_KEY).
-  --api-key <key>        ULink API key for --live (or set ULINK_API_KEY).
+  --live                 Create links via the Ulinkly API (needs --api-key/ULINK_API_KEY).
+  --api-key <key>        Ulinkly API key for --live (or set ULINK_API_KEY).
   --verify               Run routing+attribution parity checks (default ON).
   --no-verify            Skip parity checks.
   --json                 Print the manifest as JSON to stdout (for piping).
@@ -114,7 +114,7 @@ class ImportCommand {
     }
     if (opts.domain == null) {
       _Log.err(
-          'Missing --domain (your ULink domain). See `ulink import firebase --help`.');
+          'Missing --domain (your Ulinkly domain). See `ulink import firebase --help`.');
       return ImportRunResult(2, {});
     }
 
@@ -148,7 +148,7 @@ class ImportCommand {
     }
     if (!live) {
       _Log.info(ConsoleStyle.dim(
-          '  (dry-run: no links will be created; pass --live to write to ULink)'));
+          '  (dry-run: no links will be created; pass --live to write to Ulinkly)'));
     }
 
     // 2. Map -> 3. create/preview -> 4. verify, per link.
@@ -228,7 +228,7 @@ class ImportCommand {
       if (verify && parity != null && !parity.ok) {
         for (final ch in parity.failures) {
           _Log.warn(
-              '    ${ch.field}: FDL=${jsonEncode(ch.fdl)} ULink=${jsonEncode(ch.ulink)}');
+              '    ${ch.field}: FDL=${jsonEncode(ch.fdl)} Ulinkly=${jsonEncode(ch.ulink)}');
         }
       }
       if (liveParity != null && !liveParity.ok) {
@@ -308,7 +308,7 @@ class ImportCommand {
           '$okCount/${links.length} links ${live ? 'created' : 'previewed'} with ${verify ? 'verified routing + attribution parity' : 'parity check skipped'}.');
       if (!live) {
         _Log.info(ConsoleStyle.dim(
-            '  Re-run with --live --api-key <key> to create them in ULink.'));
+            '  Re-run with --live --api-key <key> to create them in Ulinkly.'));
       }
       return ImportRunResult(0, manifest);
     }

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# ULink CLI Installer for macOS and Linux
+# Ulinkly CLI Installer for macOS and Linux
 # Usage: curl -fsSL https://ulink.ly/install.sh | bash
 #        curl -fsSL https://ulink.ly/install.sh | bash -s -- --ci
 #        curl -fsSL https://ulink.ly/install.sh | bash -s -- --version v1.0.0
@@ -48,7 +48,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         -h|--help)
-            echo "ULink CLI Installer"
+            echo "Ulinkly CLI Installer"
             echo ""
             echo "Usage:"
             echo "  curl -fsSL https://ulink.ly/install.sh | bash"
@@ -142,7 +142,7 @@ tmp_file=""
 
 # Main installation
 main() {
-    log "${BLUE}ULink CLI Installer${NC}"
+    log "${BLUE}Ulinkly CLI Installer${NC}"
     log ""
 
     # Detect platform
@@ -202,7 +202,7 @@ main() {
     # Verify installation
     if [ -x "${INSTALL_DIR}/${BINARY_NAME}" ]; then
         log ""
-        log_always "${GREEN}ULink CLI installed successfully!${NC}"
+        log_always "${GREEN}Ulinkly CLI installed successfully!${NC}"
 
         # Try to show version if in PATH
         if command_exists ulink; then

@@ -167,7 +167,7 @@ class UpdateChecker {
       '┌─────────────────────────────────────────────────────────┐',
     ));
     stderr.writeln(ConsoleStyle.info(
-      '│  A new version of ULink CLI is available: v$latestVersion'.padRight(58) + '│',
+      '│  A new version of Ulinkly CLI is available: v$latestVersion'.padRight(58) + '│',
     ));
     stderr.writeln(ConsoleStyle.dim(
       '│  You have: v${ULinkVersion.version}'.padRight(58) + '│',

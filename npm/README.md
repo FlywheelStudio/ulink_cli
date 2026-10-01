@@ -1,6 +1,6 @@
 # @ulinkly/cli
 
-npm distribution of the **ULink CLI** — verify universal links & app links configuration for [ULink](https://ulink.ly) projects.
+npm distribution of the **Ulinkly CLI** — verify universal links & app links configuration for [Ulinkly](https://ulink.ly) projects.
 
 The CLI is a native binary (compiled from Dart). This package is a thin launcher: on first run it downloads the binary matching your platform from the [GitHub Releases](https://github.com/FlywheelStudio/ulink_cli/releases), verifies its checksum, caches it under `~/.ulink/npm/`, and runs it.
 

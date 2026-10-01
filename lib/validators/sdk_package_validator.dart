@@ -192,8 +192,8 @@ class SdkPackageValidator {
                 checkName: 'SDK Package - Android',
                 status: VerificationStatus.error,
                 message:
-                    'ULink SDK dependency is commented out in ${gradleFile.path}',
-                fixSuggestion: 'Uncomment the ULink SDK dependency',
+                    'Ulinkly SDK dependency is commented out in ${gradleFile.path}',
+                fixSuggestion: 'Uncomment the Ulinkly SDK dependency',
               ),
             );
             return results;
@@ -203,7 +203,7 @@ class SdkPackageValidator {
             VerificationResult(
               checkName: 'SDK Package - Android',
               status: VerificationStatus.success,
-              message: 'ULink SDK found in ${gradleFile.path}',
+              message: 'Ulinkly SDK found in ${gradleFile.path}',
             ),
           );
           break;
@@ -218,8 +218,8 @@ class SdkPackageValidator {
         VerificationResult(
           checkName: 'SDK Package - Android',
           status: VerificationStatus.error,
-          message: 'ULink SDK not found in build.gradle files',
-          fixSuggestion: 'Add ULink SDK to your dependencies:\n'
+          message: 'Ulinkly SDK not found in build.gradle files',
+          fixSuggestion: 'Add Ulinkly SDK to your dependencies:\n'
               '  dependencies {\n'
               '    implementation("ly.ulink:ulink-sdk:1.0.5")\n'
               '  }',
@@ -396,7 +396,7 @@ class SdkPackageValidator {
             VerificationResult(
               checkName: 'Expo Config Plugin',
               status: VerificationStatus.success,
-              message: 'ULink config plugin found in app.json',
+              message: 'Ulinkly config plugin found in app.json',
             ),
           );
         } else {
@@ -404,7 +404,7 @@ class SdkPackageValidator {
             VerificationResult(
               checkName: 'Expo Config Plugin',
               status: VerificationStatus.warning,
-              message: 'ULink config plugin not found in app.json',
+              message: 'Ulinkly config plugin not found in app.json',
               fixSuggestion:
                   'Add the plugin to expo.plugins, then run npx expo prebuild:\n'
                   '  ["@ulinkly/react-native", { "scheme": "yourapp", "domains": ["yourapp.shared.ly"] }]\n'

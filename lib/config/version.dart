@@ -14,7 +14,7 @@ class ULinkVersion {
 
   /// Get version info as a formatted string
   static String get versionInfo => '''
-ULink CLI Version: $version
+Ulinkly CLI Version: $version
 Build Number: $buildNumber
 Build Date: $buildDate
 ''';

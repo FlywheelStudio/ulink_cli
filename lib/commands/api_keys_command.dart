@@ -223,7 +223,7 @@ class ApiKeysCommand {
   }
 
   void _printUsage() {
-    stdout.writeln('Manage a project\'s ULink client SDK API keys.\n');
+    stdout.writeln('Manage a project\'s Ulinkly client SDK API keys.\n');
     stdout.writeln('Usage:');
     stdout.writeln('  ulink api-keys list    [--project-id <id>] [-p <dir>] [--json]');
     stdout.writeln('  ulink api-keys create  --name "<name>" [--project-id <id>] [-p <dir>] [--json]');
