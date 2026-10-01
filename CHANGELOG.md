@@ -2,6 +2,14 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.4.3] - 2026-10-01
+
+### Changed
+- **User-facing copy uses the Ulinkly brand name.** Help text, messages,
+  errors, the browser login pages, install scripts and package descriptions
+  now say Ulinkly. The `ulink` command, `ULINK_API_KEY`, config paths and SDK
+  package names are unchanged.
+
 ## [1.4.2] - 2026-09-25
 
 ### Fixed
