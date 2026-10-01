@@ -193,7 +193,7 @@ void main() {
           expect(schemeResult.status, VerificationStatus.warning);
           expect(
             schemeResult.message,
-            contains('URL schemes but ULink iOS deeplink schema is not configured'),
+            contains('URL schemes but Ulinkly iOS deeplink schema is not configured'),
           );
         });
 
@@ -299,7 +299,7 @@ void main() {
             (r) => r.checkName == 'iOS Associated Domain Match',
           );
           expect(domainResult.status, VerificationStatus.error);
-          expect(domainResult.message, contains('not found in ULink'));
+          expect(domainResult.message, contains('not found in Ulinkly'));
         });
 
         test('should warn when ULink has verified domains but local has none', () {
@@ -439,7 +439,7 @@ void main() {
             (r) => r.checkName == 'iOS Team ID',
           );
           expect(teamIdResult.status, VerificationStatus.success);
-          expect(teamIdResult.message, contains('configured in ULink'));
+          expect(teamIdResult.message, contains('configured in Ulinkly'));
         });
       });
     });
@@ -691,7 +691,7 @@ void main() {
             (r) => r.checkName == 'Android App Link Host Match',
           );
           expect(hostResult.status, VerificationStatus.error);
-          expect(hostResult.message, contains('not found in ULink'));
+          expect(hostResult.message, contains('not found in Ulinkly'));
         });
 
         test('should warn when ULink has verified domains but local has none', () {

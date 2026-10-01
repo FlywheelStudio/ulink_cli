@@ -1,4 +1,4 @@
-# Installing ULink CLI
+# Installing Ulinkly CLI
 
 ## npm (zero-install)
 
@@ -95,7 +95,7 @@ ulink --version
 
 You should see version information like:
 ```
-ULink CLI Version: 1.0.0
+Ulinkly CLI Version: 1.0.0
 Build Number: 37
 Build Date: 2026-01-21
 ```

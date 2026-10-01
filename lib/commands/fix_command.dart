@@ -12,7 +12,7 @@ class FixCommand {
 
   /// Execute interactive fix mode
   Future<void> execute(String projectPath) async {
-    print('🔧 ULink Configuration Fix Mode');
+    print('🔧 Ulinkly Configuration Fix Mode');
     print('=' * 80);
     print('');
 
@@ -44,7 +44,7 @@ class FixCommand {
       '  - Update AndroidManifest.xml with correct package name and intent filters',
     );
     print('  - Add associated domains to entitlements file');
-    print('  - Configure project settings in ULink dashboard');
+    print('  - Configure project settings in Ulinkly dashboard');
     print('');
 
     // Run verification

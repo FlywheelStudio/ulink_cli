@@ -1,10 +1,10 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    ULink CLI Installer for Windows
+    Ulinkly CLI Installer for Windows
 
 .DESCRIPTION
-    Downloads and installs the ULink CLI tool.
+    Downloads and installs the Ulinkly CLI tool.
 
 .PARAMETER CI
     Silent mode for CI environments
@@ -45,7 +45,7 @@ function Write-LogAlways {
 
 function Show-Help {
     Write-Host @"
-ULink CLI Installer for Windows
+Ulinkly CLI Installer for Windows
 
 Usage:
     irm https://ulink.ly/install.ps1 | iex
@@ -109,7 +109,7 @@ function Main {
         Show-Help
     }
 
-    Write-Log "ULink CLI Installer" "Cyan"
+    Write-Log "Ulinkly CLI Installer" "Cyan"
     Write-Log ""
 
     # Detect architecture
@@ -149,7 +149,7 @@ function Main {
     # Verify installation
     if (Test-Path $installPath) {
         Write-Log ""
-        Write-LogAlways "ULink CLI installed successfully!" "Green"
+        Write-LogAlways "Ulinkly CLI installed successfully!" "Green"
 
         # Try to show version
         try {

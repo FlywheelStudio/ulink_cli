@@ -62,7 +62,7 @@ class ProjectCommand {
 
       if (projects.isEmpty) {
         stderr.writeln(
-            'No projects found. Create a project in the ULink dashboard first.');
+            'No projects found. Create a project in the Ulinkly dashboard first.');
         stderr.writeln('Visit https://ulink.ly to create a project');
         exit(1);
       }

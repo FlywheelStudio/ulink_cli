@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-// Thin npm launcher for the ULink CLI.
+// Thin npm launcher for the Ulinkly CLI.
 //
 // The CLI itself is a Dart program compiled to native binaries and published
 // as GitHub Release assets on FlywheelStudio/ulink_cli. This package does not
@@ -88,7 +88,7 @@ async function ensureBinary() {
 
   const asset = assetName();
   const base = `https://github.com/${REPO}/releases/download/${VERSION}`;
-  process.stderr.write(`Fetching ULink CLI ${VERSION} (${asset})…\n`);
+  process.stderr.write(`Fetching Ulinkly CLI ${VERSION} (${asset})…\n`);
 
   const bin = await download(`${base}/${asset}`);
 

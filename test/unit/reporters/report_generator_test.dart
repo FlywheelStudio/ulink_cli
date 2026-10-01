@@ -20,7 +20,7 @@ void main() {
 
         final result = ReportGenerator.generateReport(report);
 
-        expect(result, contains('ULink Verification'));
+        expect(result, contains('Ulinkly Verification'));
         expect(result, contains('flutter'));
         expect(result, contains('passed'));
       });
@@ -125,7 +125,7 @@ void main() {
 
         final result = ReportGenerator.generateReport(report, verbose: true);
 
-        expect(result, contains('ULink Configuration Verification Report'));
+        expect(result, contains('Ulinkly Configuration Verification Report'));
         expect(result, contains('Summary'));
         expect(result, contains('SUCCESS'));
       });
@@ -201,7 +201,7 @@ void main() {
 
         final result = ReportGenerator.generateReport(report);
 
-        expect(result, contains('ULink Verification'));
+        expect(result, contains('Ulinkly Verification'));
         expect(result, contains('All checks passed'));
       });
     });

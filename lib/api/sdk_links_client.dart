@@ -178,7 +178,7 @@ class SdkLinksClient {
     }
     if (res.statusCode < 200 || res.statusCode >= 300) {
       final msg = body['message'] ?? body['error'] ?? (text.isNotEmpty ? text : 'HTTP ${res.statusCode}');
-      throw Exception('ULink API ${res.statusCode}: $msg');
+      throw Exception('Ulinkly API ${res.statusCode}: $msg');
     }
     return CreateOutcome(
       status: 'created',

@@ -168,7 +168,7 @@ class LocalAuthServer {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ULink CLI - Authenticated</title>
+  <title>Ulinkly CLI - Authenticated</title>
   <style>
     * {
       margin: 0;
@@ -235,7 +235,7 @@ class LocalAuthServer {
       </svg>
     </div>
     <h1>Authentication Successful!</h1>
-    <p>You have been successfully authenticated with the ULink CLI.</p>
+    <p>You have been successfully authenticated with the Ulinkly CLI.</p>
     <p class="close-note">You can close this window and return to your terminal.</p>
   </div>
   <script>
@@ -257,7 +257,7 @@ class LocalAuthServer {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ULink CLI - Authentication Failed</title>
+  <title>Ulinkly CLI - Authentication Failed</title>
   <style>
     * {
       margin: 0;
@@ -326,7 +326,7 @@ class LocalAuthServer {
       </svg>
     </div>
     <h1>Authentication Failed</h1>
-    <p>There was a problem authenticating with the ULink CLI.</p>
+    <p>There was a problem authenticating with the Ulinkly CLI.</p>
     <div class="error-message">$message</div>
   </div>
 </body>

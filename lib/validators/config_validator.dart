@@ -21,7 +21,7 @@ class ConfigValidator {
             status: VerificationStatus.error,
             message: 'Bundle identifier mismatch',
             fixSuggestion:
-                'Update ULink config: ${localConfig.bundleIdentifier}\n'
+                'Update Ulinkly config: ${localConfig.bundleIdentifier}\n'
                 'Or update Info.plist: ${ulinkConfig.iosBundleIdentifier}',
             details: {
               'local': localConfig.bundleIdentifier,
@@ -44,9 +44,9 @@ class ConfigValidator {
           checkName: 'iOS Bundle Identifier Match',
           status: VerificationStatus.warning,
           message:
-              'Bundle identifier not found in local config or ULink config',
+              'Bundle identifier not found in local config or Ulinkly config',
           fixSuggestion:
-              'Ensure bundle identifier is set in both Info.plist and ULink dashboard',
+              'Ensure bundle identifier is set in both Info.plist and Ulinkly dashboard',
         ),
       );
     }
@@ -72,7 +72,7 @@ class ConfigValidator {
             message: 'URL scheme mismatch',
             fixSuggestion:
                 'Add URL scheme "$expectedScheme" to Info.plist CFBundleURLSchemes\n'
-                'Or update ULink config to match: ${schemesToCheck.isEmpty ? "(none found)" : schemesToCheck.join(", ")}',
+                'Or update Ulinkly config to match: ${schemesToCheck.isEmpty ? "(none found)" : schemesToCheck.join(", ")}',
             details: {'local': schemesToCheck, 'ulink': expectedScheme},
           ),
         );
@@ -87,7 +87,7 @@ class ConfigValidator {
             VerificationResult(
               checkName: 'iOS URL Scheme Match',
               status: VerificationStatus.success,
-              message: 'URL scheme matches (ULink: $expectedScheme)',
+              message: 'URL scheme matches (Ulinkly: $expectedScheme)',
               details: {
                 'matched': expectedScheme,
                 'local': schemesToCheck,
@@ -100,10 +100,10 @@ class ConfigValidator {
               checkName: 'iOS Extra URL Schemes',
               status: VerificationStatus.warning,
               message:
-                  'Local has ${extraSchemes.length} extra URL scheme(s) not configured in ULink',
+                  'Local has ${extraSchemes.length} extra URL scheme(s) not configured in Ulinkly',
               fixSuggestion:
-                  'These schemes are in your Info.plist but not in ULink config:\n${extraSchemes.join(", ")}\n'
-                  'If these are intentional, you can ignore this warning. Otherwise, remove them or add "$expectedScheme" to ULink.',
+                  'These schemes are in your Info.plist but not in Ulinkly config:\n${extraSchemes.join(", ")}\n'
+                  'If these are intentional, you can ignore this warning. Otherwise, remove them or add "$expectedScheme" to Ulinkly.',
               details: {
                 'extraSchemes': extraSchemes,
                 'ulinkScheme': expectedScheme,
@@ -127,9 +127,9 @@ class ConfigValidator {
           checkName: 'iOS URL Scheme Match',
           status: VerificationStatus.warning,
           message:
-              'Local iOS has URL schemes but ULink iOS deeplink schema is not configured',
+              'Local iOS has URL schemes but Ulinkly iOS deeplink schema is not configured',
           fixSuggestion:
-              'Configure iOS deeplink schema in ULink dashboard to: ${schemesToCheck.first}',
+              'Configure iOS deeplink schema in Ulinkly dashboard to: ${schemesToCheck.first}',
           details: {'local': schemesToCheck, 'ulink': '(not configured)'},
         ),
       );
@@ -156,7 +156,7 @@ class ConfigValidator {
           VerificationResult(
             checkName: 'iOS Associated Domain Match',
             status: VerificationStatus.success,
-            message: 'Associated domain matches verified ULink domain',
+            message: 'Associated domain matches verified Ulinkly domain',
             details: {
               'matched': matchedVerifiedDomain,
               'local': localConfig.associatedDomains,
@@ -180,9 +180,9 @@ class ConfigValidator {
               checkName: 'iOS Associated Domain Match',
               status: VerificationStatus.error,
               message:
-                  'Domain "$unverifiedMatch" exists in ULink but is not verified (status: $domainStatus)',
+                  'Domain "$unverifiedMatch" exists in Ulinkly but is not verified (status: $domainStatus)',
               fixSuggestion:
-                  'Complete domain verification in ULink dashboard for "$unverifiedMatch"',
+                  'Complete domain verification in Ulinkly dashboard for "$unverifiedMatch"',
               details: {
                 'local': localConfig.associatedDomains,
                 'ulink': unverifiedMatch,
@@ -197,9 +197,9 @@ class ConfigValidator {
               checkName: 'iOS Associated Domain Match',
               status: VerificationStatus.error,
               message:
-                  'Local domain "${localConfig.associatedDomains.first}" not found in ULink',
+                  'Local domain "${localConfig.associatedDomains.first}" not found in Ulinkly',
               fixSuggestion:
-                  'Add domain "${localConfig.associatedDomains.first}" to ULink dashboard and verify it',
+                  'Add domain "${localConfig.associatedDomains.first}" to Ulinkly dashboard and verify it',
               details: {
                 'local': localConfig.associatedDomains,
                 'ulink': allUlinkDomains,
@@ -229,9 +229,9 @@ class ConfigValidator {
         VerificationResult(
           checkName: 'iOS Associated Domain Match',
           status: VerificationStatus.warning,
-          message: 'ULink has domains but none are verified',
+          message: 'Ulinkly has domains but none are verified',
           fixSuggestion:
-              'Verify your domains in the ULink dashboard to enable Universal Links',
+              'Verify your domains in the Ulinkly dashboard to enable Universal Links',
           details: {
             'local': localConfig.associatedDomains,
             'ulink': ulinkConfig.domains
@@ -248,9 +248,9 @@ class ConfigValidator {
         VerificationResult(
           checkName: 'iOS Team ID',
           status: VerificationStatus.warning,
-          message: 'Team ID not configured in ULink',
+          message: 'Team ID not configured in Ulinkly',
           fixSuggestion:
-              'Add your Apple Team ID to ULink project configuration',
+              'Add your Apple Team ID to Ulinkly project configuration',
         ),
       );
     } else if (localConfig.teamId != null && localConfig.teamId!.isNotEmpty) {
@@ -261,7 +261,7 @@ class ConfigValidator {
             checkName: 'iOS Team ID Match',
             status: VerificationStatus.error,
             message: 'Team ID mismatch',
-            fixSuggestion: 'Update ULink Team ID to: ${localConfig.teamId}\n'
+            fixSuggestion: 'Update Ulinkly Team ID to: ${localConfig.teamId}\n'
                 'Or update your Xcode project to use: ${ulinkConfig.iosTeamId}',
             details: {
               'local': localConfig.teamId,
@@ -283,7 +283,7 @@ class ConfigValidator {
         VerificationResult(
           checkName: 'iOS Team ID',
           status: VerificationStatus.success,
-          message: 'Team ID is configured in ULink',
+          message: 'Team ID is configured in Ulinkly',
           details: {'ulink': ulinkConfig.iosTeamId},
         ),
       );
@@ -308,7 +308,7 @@ class ConfigValidator {
             checkName: 'Android Package Name Match',
             status: VerificationStatus.error,
             message: 'Package name mismatch',
-            fixSuggestion: 'Update ULink config: ${localConfig.packageName}\n'
+            fixSuggestion: 'Update Ulinkly config: ${localConfig.packageName}\n'
                 'Or update AndroidManifest.xml: ${ulinkConfig.androidPackageName}',
             details: {
               'local': localConfig.packageName,
@@ -330,9 +330,9 @@ class ConfigValidator {
         VerificationResult(
           checkName: 'Android Package Name Match',
           status: VerificationStatus.warning,
-          message: 'Package name not found in local config or ULink config',
+          message: 'Package name not found in local config or Ulinkly config',
           fixSuggestion:
-              'Ensure package name is set in both AndroidManifest.xml and ULink dashboard',
+              'Ensure package name is set in both AndroidManifest.xml and Ulinkly dashboard',
         ),
       );
     }
@@ -372,7 +372,7 @@ class ConfigValidator {
             message: diagnosticMessage,
             fixSuggestion:
                 'Add URL scheme "$expectedScheme" to AndroidManifest.xml intent filter\n'
-                'Or update ULink config to match: ${androidSchemesToCheck.isEmpty ? "(none found)" : androidSchemesToCheck.join(", ")}',
+                'Or update Ulinkly config to match: ${androidSchemesToCheck.isEmpty ? "(none found)" : androidSchemesToCheck.join(", ")}',
             details: {
               'local': androidSchemesToCheck,
               'ulink': expectedScheme,
@@ -392,7 +392,7 @@ class ConfigValidator {
             VerificationResult(
               checkName: 'Android URL Scheme Match',
               status: VerificationStatus.success,
-              message: 'URL scheme matches (ULink: $expectedScheme)',
+              message: 'URL scheme matches (Ulinkly: $expectedScheme)',
               details: {
                 'matched': expectedScheme,
                 'local': androidSchemesToCheck,
@@ -405,10 +405,10 @@ class ConfigValidator {
               checkName: 'Android Extra URL Schemes',
               status: VerificationStatus.warning,
               message:
-                  'Local has ${extraSchemes.length} extra URL scheme(s) not configured in ULink',
+                  'Local has ${extraSchemes.length} extra URL scheme(s) not configured in Ulinkly',
               fixSuggestion:
-                  'These schemes are in your AndroidManifest.xml but not in ULink config:\n${extraSchemes.join(", ")}\n'
-                  'If these are intentional, you can ignore this warning. Otherwise, remove them or add "$expectedScheme" to ULink.',
+                  'These schemes are in your AndroidManifest.xml but not in Ulinkly config:\n${extraSchemes.join(", ")}\n'
+                  'If these are intentional, you can ignore this warning. Otherwise, remove them or add "$expectedScheme" to Ulinkly.',
               details: {
                 'extraSchemes': extraSchemes,
                 'ulinkScheme': expectedScheme,
@@ -432,9 +432,9 @@ class ConfigValidator {
           checkName: 'Android URL Scheme Match',
           status: VerificationStatus.warning,
           message:
-              'Local Android has URL schemes but ULink Android deeplink schema is not configured',
+              'Local Android has URL schemes but Ulinkly Android deeplink schema is not configured',
           fixSuggestion:
-              'Configure Android deeplink schema in ULink dashboard to: ${androidSchemesToCheck.first}',
+              'Configure Android deeplink schema in Ulinkly dashboard to: ${androidSchemesToCheck.first}',
           details: {
             'local': androidSchemesToCheck,
             'ulink': '(not configured)'
@@ -465,7 +465,7 @@ class ConfigValidator {
           VerificationResult(
             checkName: 'Android App Link Host Match',
             status: VerificationStatus.success,
-            message: 'App Link host matches verified ULink domain',
+            message: 'App Link host matches verified Ulinkly domain',
             details: {
               'matched': matchedVerifiedHost,
               'local': localConfig.appLinkHosts,
@@ -489,9 +489,9 @@ class ConfigValidator {
               checkName: 'Android App Link Host Match',
               status: VerificationStatus.error,
               message:
-                  'Domain "$unverifiedMatch" exists in ULink but is not verified (status: $domainStatus)',
+                  'Domain "$unverifiedMatch" exists in Ulinkly but is not verified (status: $domainStatus)',
               fixSuggestion:
-                  'Complete domain verification in ULink dashboard for "$unverifiedMatch"',
+                  'Complete domain verification in Ulinkly dashboard for "$unverifiedMatch"',
               details: {
                 'local': localConfig.appLinkHosts,
                 'ulink': unverifiedMatch,
@@ -506,9 +506,9 @@ class ConfigValidator {
               checkName: 'Android App Link Host Match',
               status: VerificationStatus.error,
               message:
-                  'Local host "${localConfig.appLinkHosts.first}" not found in ULink',
+                  'Local host "${localConfig.appLinkHosts.first}" not found in Ulinkly',
               fixSuggestion:
-                  'Add domain "${localConfig.appLinkHosts.first}" to ULink dashboard and verify it',
+                  'Add domain "${localConfig.appLinkHosts.first}" to Ulinkly dashboard and verify it',
               details: {
                 'local': localConfig.appLinkHosts,
                 'ulink': allAndroidUlinkDomains,
@@ -538,9 +538,9 @@ class ConfigValidator {
         VerificationResult(
           checkName: 'Android App Link Host Match',
           status: VerificationStatus.warning,
-          message: 'ULink has domains but none are verified',
+          message: 'Ulinkly has domains but none are verified',
           fixSuggestion:
-              'Verify your domains in the ULink dashboard to enable App Links',
+              'Verify your domains in the Ulinkly dashboard to enable App Links',
           details: {
             'local': localConfig.appLinkHosts,
             'ulink': ulinkConfig.domains
@@ -557,9 +557,9 @@ class ConfigValidator {
         VerificationResult(
           checkName: 'Android SHA-256 Fingerprints',
           status: VerificationStatus.warning,
-          message: 'SHA-256 fingerprints not configured in ULink',
+          message: 'SHA-256 fingerprints not configured in Ulinkly',
           fixSuggestion:
-              'Add your app signing key SHA-256 fingerprints to ULink project configuration',
+              'Add your app signing key SHA-256 fingerprints to Ulinkly project configuration',
         ),
       );
     } else {

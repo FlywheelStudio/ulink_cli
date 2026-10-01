@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ULink CLI Build Script
+# Ulinkly CLI Build Script
 # Usage: ./build.sh [--install] [--bump-version]
 
 set -e
@@ -29,7 +29,7 @@ for arg in "$@"; do
             BUMP_VERSION=true
             ;;
         --help|-h)
-            echo "ULink CLI Build Script"
+            echo "Ulinkly CLI Build Script"
             echo ""
             echo "Usage: ./build.sh [options]"
             echo ""
@@ -86,7 +86,7 @@ fi
 VERSION=$(grep "static const String version = " "$VERSION_FILE" | sed "s/.*'\([^']*\)'.*/\1/")
 BUILD_DATE=$(grep "static const String buildDate = " "$VERSION_FILE" | sed "s/.*'\([^']*\)'.*/\1/")
 
-echo -e "${GREEN}Building ULink CLI v$VERSION (build $NEW_BUILD)${NC}"
+echo -e "${GREEN}Building Ulinkly CLI v$VERSION (build $NEW_BUILD)${NC}"
 echo ""
 
 # Run dart pub get
@@ -116,7 +116,7 @@ if [ "$INSTALL" = true ]; then
 fi
 
 echo ""
-echo -e "${GREEN}ULink CLI v$VERSION (build $NEW_BUILD) - $BUILD_DATE${NC}"
+echo -e "${GREEN}Ulinkly CLI v$VERSION (build $NEW_BUILD) - $BUILD_DATE${NC}"
 
 # Verify
 if [ "$INSTALL" = true ]; then

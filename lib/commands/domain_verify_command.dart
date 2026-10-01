@@ -26,7 +26,7 @@ const String _aasaPath = '/.well-known/apple-app-site-association';
 const String _assetlinksPath = '/.well-known/assetlinks.json';
 
 const String domainVerifyUsage = '''
-ulink verify --domain <your.ulink.app> — check a ULink domain serves valid app-link association files
+ulink verify --domain <your.ulink.app> — check a Ulinkly domain serves valid app-link association files
 
 Usage
   ulink verify --domain <your.ulink.app> [options]
@@ -121,7 +121,7 @@ class DomainVerifyCommand {
       final domain = normalizeDomain(opts.domain ?? '');
       if (domain.isEmpty) {
         _Log.err(
-            'Missing --domain (the ULink domain to verify). See `ulink verify --help`.');
+            'Missing --domain (the Ulinkly domain to verify). See `ulink verify --help`.');
         return DomainVerifyRunResult(2, null);
       }
 
