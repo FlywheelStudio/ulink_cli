@@ -5,6 +5,7 @@ import '../models/project_list_item.dart';
 import '../auth/config_manager.dart';
 import '../auth/auth_service.dart';
 import '../models/auth_config.dart';
+import '../config/constants.dart';
 
 /// Client for interacting with ULink API
 class ULinkApiClient {
@@ -45,7 +46,10 @@ class ULinkApiClient {
       if (supabaseUrl != null && supabaseAnonKey != null) {
         return await AuthService.getValidToken(
           supabaseUrl: supabaseUrl,
-          supabaseAnonKey: supabaseAnonKey,
+          supabaseAnonKey: ULinkConstants.resolveSupabaseKey(
+            supabaseUrl: supabaseUrl,
+            storedKey: supabaseAnonKey,
+          ),
         );
       }
       // No Supabase credentials — return token as-is if not expired
@@ -91,7 +95,10 @@ class ULinkApiClient {
       final refreshed = await AuthService.refreshToken(
         refreshToken: auth.refreshToken!,
         supabaseUrl: supabaseUrl,
-        supabaseAnonKey: supabaseAnonKey,
+        supabaseAnonKey: ULinkConstants.resolveSupabaseKey(
+          supabaseUrl: supabaseUrl,
+          storedKey: supabaseAnonKey,
+        ),
       );
       await ConfigManager.updateAuth(refreshed);
       return <String, String>{
@@ -104,7 +111,8 @@ class ULinkApiClient {
   }
 
   /// Execute a GET request with automatic 401 retry
-  Future<http.Response> _getWithRetry(Uri url, Map<String, String> headers) async {
+  Future<http.Response> _getWithRetry(
+      Uri url, Map<String, String> headers) async {
     var response = await http.get(url, headers: headers);
     if (response.statusCode == 401) {
       final retryHeaders = await _refreshAndBuildHeaders();
@@ -210,7 +218,8 @@ class ULinkApiClient {
         'Not found while trying to $action (endpoint or key). Base URL: $baseUrl',
       );
     }
-    throw Exception('Failed to $action: ${response.statusCode} ${response.body}');
+    throw Exception(
+        'Failed to $action: ${response.statusCode} ${response.body}');
   }
 
   /// Best-effort human-readable message from a NestJS-style error body, falling
@@ -447,7 +456,8 @@ class ULinkApiClient {
     String projectId,
     Map<String, dynamic> verificationReport,
   ) async {
-    final url = Uri.parse('$baseUrl/projects/$projectId/onboarding/cli-verification');
+    final url =
+        Uri.parse('$baseUrl/projects/$projectId/onboarding/cli-verification');
     final headers = await _authHeaders();
 
     final response = await _postWithRetry(
