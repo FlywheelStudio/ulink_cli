@@ -2,6 +2,16 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.4.4] - 2026-10-08
+
+### Changed
+- **Uses the Supabase publishable key for sign-in token refresh.** Supabase is
+  retiring the legacy JWT anon key the CLI embedded. Existing logins keep
+  working: a legacy key saved in `~/.ulink/config.json` by an earlier version
+  is replaced with the publishable key when the token is refreshed, so no
+  re-login is needed. Versions 1.4.3 and older will need to be upgraded once
+  the legacy key is switched off.
+
 ## [1.4.3] - 2026-10-01
 
 ### Changed
