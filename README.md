@@ -1,6 +1,6 @@
 # Ulinkly CLI
 
-CLI tool for verifying and managing universal links (iOS) and app links (Android) configuration for Ulinkly projects.
+CLI tool for verifying and managing universal links (iOS) and app links (Android) configuration for [Ulinkly](https://ulink.ly) projects.
 
 ## AI-Assisted Setup (Recommended)
 
@@ -345,5 +345,5 @@ Run `ulink verify -v` for verbose output to see detailed error messages.
 
 ## Support
 
-- Documentation: [https://ulink.ly/docs](https://ulink.ly/docs)
+- Documentation: [https://docs.ulink.ly](https://docs.ulink.ly)
 - Issues: [GitHub Issues](https://github.com/FlywheelStudio/ulink_cli/issues)
