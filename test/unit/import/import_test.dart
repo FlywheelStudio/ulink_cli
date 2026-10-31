@@ -193,6 +193,18 @@ void main() {
   });
 
   group('SdkLinksClient.toSdkPayload', () {
+    test('sends the --domain host so multi-domain projects can import', () {
+      final fdl = FdlParser.parseUrl('https://acme.page.link/?link=https://acme.com/x');
+      expect(
+          SdkLinksClient.toSdkPayload(
+              FdlMapper.mapToUlink(fdl, domain: 'links.acme.com', index: 0))['domain'],
+          'links.acme.com');
+      expect(
+          SdkLinksClient.toSdkPayload(FdlMapper.mapToUlink(fdl,
+              domain: 'https://Links.Acme.com/', index: 0))['domain'],
+          'links.acme.com');
+    });
+
     test('serializes to the real /sdk/links schema + forwards attribution', () {
       final fdl = FdlParser.parseUrl(
         'https://acme.page.link/?link=https://acme.com/x&apn=com.acme.app&ibi=com.acme.app&isi=99&ius=acme&efr=1&ofl=https://acme.com/web&utm_source=s&utm_campaign=c&at=AT&st=Hi&si=https://acme.com/og.png',
