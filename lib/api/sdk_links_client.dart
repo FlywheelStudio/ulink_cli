@@ -61,6 +61,17 @@ String _appStoreUrl(String id) => 'https://apps.apple.com/app/id$id';
 Map<String, dynamic> _m(dynamic v) =>
     v is Map ? Map<String, dynamic>.from(v) : <String, dynamic>{};
 
+/// Bare host for the API's exact-match domain lookup: drops any scheme, path
+/// or trailing dot the user passed to --domain.
+String? _host(Object? domain) {
+  if (domain == null) return null;
+  var d = '$domain'.trim().toLowerCase();
+  d = d.replaceFirst(RegExp(r'^[a-z][a-z0-9+.-]*://'), '');
+  d = d.split('/').first;
+  if (d.endsWith('.')) d = d.substring(0, d.length - 1);
+  return d.isEmpty ? null : d;
+}
+
 Map<String, dynamic> _pruneEmpty(Map<String, dynamic> obj) {
   final out = <String, dynamic>{};
   obj.forEach((k, v) {
@@ -137,6 +148,8 @@ class SdkLinksClient {
     return _pruneEmpty({
       'type': 'unified',
       'slug': link['slug'],
+      // Required by the API when the project has more than one domain.
+      'domain': _host(link['domain']),
       'fallbackUrl': fallbackUrl,
       'iosUrl': iosUrl,
       'androidUrl': androidUrl,
