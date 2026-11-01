@@ -2,6 +2,20 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.4.5] - 2026-11-01
+
+### Fixed
+- **`ulink import firebase` works for projects with more than one domain.**
+  The importer never sent `--domain` to the API, so every link was rejected
+  with "Multiple domains found" when a project had, for example, a shared.ly
+  subdomain and a custom domain. The host is now sent, normalized to a bare
+  host (scheme, path and trailing dot removed).
+
+### Changed
+- **`--domain` must name one of the project's domains.** Because the host is
+  now sent, a mistyped `--domain` is rejected by the API even on projects with
+  a single domain, where earlier versions ignored it.
+
 ## [1.4.4] - 2026-10-08
 
 ### Changed
