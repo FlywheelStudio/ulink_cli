@@ -25,7 +25,8 @@ jobs:
         run: dart pub get
 
       - name: Build binary
-        run: dart compile exe bin/ulink.dart -o ulink-macos-arm64
+        shell: bash
+        run: dart compile exe -DBUILD_DATE=$(date -u +%Y-%m-%d) bin/ulink.dart -o ulink-macos-arm64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -46,7 +47,8 @@ jobs:
         run: dart pub get
 
       - name: Build binary
-        run: dart compile exe bin/ulink.dart -o ulink-macos-x64
+        shell: bash
+        run: dart compile exe -DBUILD_DATE=$(date -u +%Y-%m-%d) bin/ulink.dart -o ulink-macos-x64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -67,7 +69,8 @@ jobs:
         run: dart pub get
 
       - name: Build binary
-        run: dart compile exe bin/ulink.dart -o ulink-linux-x64
+        shell: bash
+        run: dart compile exe -DBUILD_DATE=$(date -u +%Y-%m-%d) bin/ulink.dart -o ulink-linux-x64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -88,7 +91,8 @@ jobs:
         run: dart pub get
 
       - name: Build binary
-        run: dart compile exe bin/ulink.dart -o ulink-windows-x64.exe
+        shell: bash
+        run: dart compile exe -DBUILD_DATE=$(date -u +%Y-%m-%d) bin/ulink.dart -o ulink-windows-x64.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
