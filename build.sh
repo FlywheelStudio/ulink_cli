@@ -62,15 +62,11 @@ get_build_number() {
 bump_build_number() {
     local current_build=$(get_build_number)
     local new_build=$((current_build + 1))
-    local today=$(date +%Y-%m-%d)
 
     echo -e "${YELLOW}Bumping build number: $current_build -> $new_build${NC}"
 
     # Update build number
     sed -i '' "s/static const String buildNumber = '[0-9]*'/static const String buildNumber = '$new_build'/" "$VERSION_FILE"
-
-    # Update build date
-    sed -i '' "s/static const String buildDate = '[0-9-]*'/static const String buildDate = '$today'/" "$VERSION_FILE"
 
     echo "$new_build"
 }
@@ -84,7 +80,7 @@ fi
 
 # Get version info
 VERSION=$(grep "static const String version = " "$VERSION_FILE" | sed "s/.*'\([^']*\)'.*/\1/")
-BUILD_DATE=$(grep "static const String buildDate = " "$VERSION_FILE" | sed "s/.*'\([^']*\)'.*/\1/")
+BUILD_DATE=$(date -u +%Y-%m-%d)
 
 echo -e "${GREEN}Building Ulinkly CLI v$VERSION (build $NEW_BUILD)${NC}"
 echo ""
@@ -95,7 +91,7 @@ dart pub get 2>&1 | grep -v "^Resolving\|^Downloading\|^Changed\|^Got\|^  " || t
 
 # Compile
 echo "Compiling..."
-dart compile exe bin/ulink.dart -o "$OUTPUT_BINARY" 2>&1 | grep -v "^Info:"
+dart compile exe -DBUILD_DATE="$BUILD_DATE" bin/ulink.dart -o "$OUTPUT_BINARY" 2>&1 | grep -v "^Info:"
 
 echo ""
 echo -e "${GREEN}✓ Built successfully: $OUTPUT_BINARY${NC}"

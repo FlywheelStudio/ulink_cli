@@ -6,8 +6,10 @@ class ULinkVersion {
   /// Build number (incremented with each build)
   static const String buildNumber = '46';
 
-  /// Build date (ISO 8601 format)
-  static const String buildDate = '2026-09-25';
+  /// Build date (ISO 8601 format), set at compile time with
+  /// `-DBUILD_DATE=YYYY-MM-DD` by build.sh and the release workflow.
+  static const String buildDate =
+      String.fromEnvironment('BUILD_DATE', defaultValue: 'unknown');
 
   /// Get full version string
   static String get fullVersion => '$version+$buildNumber';
