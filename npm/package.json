@@ -1,6 +1,6 @@
 {
   "name": "@ulinkly/cli",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Ulinkly CLI — verify universal links & app links configuration for Ulinkly projects",
   "bin": {
     "ulink": "./bin/ulink.js"
