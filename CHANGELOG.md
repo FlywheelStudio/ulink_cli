@@ -2,6 +2,13 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.4.6] - 2026-11-01
+
+### Fixed
+- **`ulink --version` reports the real build date.** Releases since 1.4.2
+  showed 2026-09-25 because the date was only updated by the local build
+  script. It is now set when the release binaries are compiled.
+
 ## [1.4.5] - 2026-11-01
 
 ### Fixed
