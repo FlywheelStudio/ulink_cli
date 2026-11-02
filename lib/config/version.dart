@@ -3,8 +3,10 @@ class ULinkVersion {
   /// Current version of the CLI tool
   static const String version = '1.4.6';
 
-  /// Build number (incremented with each build)
-  static const String buildNumber = '46';
+  /// Build number (git commit count), set at compile time with
+  /// `-DBUILD_NUMBER=N` by build.sh and the release workflow.
+  static const String buildNumber =
+      String.fromEnvironment('BUILD_NUMBER', defaultValue: 'unknown');
 
   /// Build date (ISO 8601 format), set at compile time with
   /// `-DBUILD_DATE=YYYY-MM-DD` by build.sh and the release workflow.

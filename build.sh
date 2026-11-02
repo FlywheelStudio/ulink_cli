@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Ulinkly CLI Build Script
-# Usage: ./build.sh [--install] [--bump-version]
+# Usage: ./build.sh [--install]
 
 set -e
 
@@ -18,15 +18,11 @@ NC='\033[0m' # No Color
 
 # Parse arguments
 INSTALL=false
-BUMP_VERSION=false
 
 for arg in "$@"; do
     case $arg in
         --install|-i)
             INSTALL=true
-            ;;
-        --bump-version|-b)
-            BUMP_VERSION=true
             ;;
         --help|-h)
             echo "Ulinkly CLI Build Script"
@@ -35,13 +31,11 @@ for arg in "$@"; do
             echo ""
             echo "Options:"
             echo "  -i, --install       Install to $INSTALL_PATH after building"
-            echo "  -b, --bump-version  Increment build number before building"
             echo "  -h, --help          Show this help message"
             echo ""
             echo "Examples:"
             echo "  ./build.sh                    # Just build"
             echo "  ./build.sh -i                 # Build and install"
-            echo "  ./build.sh -b -i              # Bump version, build, and install"
             exit 0
             ;;
         *)
@@ -53,30 +47,8 @@ done
 
 cd "$SCRIPT_DIR"
 
-# Function to get current build number
-get_build_number() {
-    grep "static const String buildNumber" "$VERSION_FILE" | sed "s/.*'\([0-9]*\)'.*/\1/"
-}
-
-# Function to bump build number
-bump_build_number() {
-    local current_build=$(get_build_number)
-    local new_build=$((current_build + 1))
-
-    echo -e "${YELLOW}Bumping build number: $current_build -> $new_build${NC}"
-
-    # Update build number
-    sed -i '' "s/static const String buildNumber = '[0-9]*'/static const String buildNumber = '$new_build'/" "$VERSION_FILE"
-
-    echo "$new_build"
-}
-
-# Bump version if requested
-if [ "$BUMP_VERSION" = true ]; then
-    NEW_BUILD=$(bump_build_number)
-else
-    NEW_BUILD=$(get_build_number)
-fi
+# Build number is the git commit count
+NEW_BUILD=$(git rev-list --count HEAD)
 
 # Get version info
 VERSION=$(grep "static const String version = " "$VERSION_FILE" | sed "s/.*'\([^']*\)'.*/\1/")
@@ -91,7 +63,7 @@ dart pub get 2>&1 | grep -v "^Resolving\|^Downloading\|^Changed\|^Got\|^  " || t
 
 # Compile
 echo "Compiling..."
-dart compile exe -DBUILD_DATE="$BUILD_DATE" bin/ulink.dart -o "$OUTPUT_BINARY" 2>&1 | grep -v "^Info:"
+dart compile exe -DBUILD_DATE="$BUILD_DATE" -DBUILD_NUMBER="$NEW_BUILD" bin/ulink.dart -o "$OUTPUT_BINARY" 2>&1 | grep -v "^Info:"
 
 echo ""
 echo -e "${GREEN}✓ Built successfully: $OUTPUT_BINARY${NC}"
