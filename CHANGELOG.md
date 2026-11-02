@@ -2,6 +2,13 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.4.7] - 2026-11-02
+
+### Fixed
+- **`ulink --version` reports a real build number.** It showed 46 on every
+  release because the number was a constant. It is now the git commit count,
+  set when the binary is compiled.
+
 ## [1.4.6] - 2026-11-01
 
 ### Fixed
