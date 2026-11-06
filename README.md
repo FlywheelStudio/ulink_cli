@@ -172,7 +172,7 @@ ulink verify --strict
 
 The dashboard cross-checks (comparing local config against your Ulinkly project
 and fetching the hosted AASA / assetlinks.json) only run when authenticated
-(`ulink login` or `--api-key`). Without them the run is reported as PARTIAL and,
+(`ulink login`, or `ulink login --api-key` to use an API key). Without them the run is reported as PARTIAL and,
 by default, still exits `0` so unauthenticated smoke tests don't break. Pass
 `--strict` to make a partial run fail instead.
 
