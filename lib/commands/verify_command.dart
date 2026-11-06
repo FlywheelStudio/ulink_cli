@@ -465,7 +465,7 @@ class VerifyCommand {
                 'compared against the Ulinkly dashboard config, and the hosted '
                 'well-known files were not fetched.';
         crossCheckFix =
-            'Run "ulink login" to authenticate (or pass --api-key) so verify can '
+            'Run "ulink login" to authenticate (or "ulink login --api-key") so verify can '
             'compare local config against the dashboard and fetch the domain\'s '
             'AASA / assetlinks.json. Without this, verify only confirms local '
             'files exist — not that deep linking actually resolves.';
