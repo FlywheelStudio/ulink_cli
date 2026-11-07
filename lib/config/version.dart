@@ -1,7 +1,7 @@
 /// ULink CLI version information
 class ULinkVersion {
   /// Current version of the CLI tool
-  static const String version = '1.4.7';
+  static const String version = '1.4.8';
 
   /// Build number (git commit count), set at compile time with
   /// `-DBUILD_NUMBER=N` by build.sh and the release workflow.

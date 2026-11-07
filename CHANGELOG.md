@@ -2,6 +2,13 @@
 
 All notable changes to the ULink CLI will be documented in this file.
 
+## [1.4.8] - 2026-11-07
+
+### Fixed
+- **`ulink verify` suggests a command that exists.** Its hint and the README
+  told users to run `ulink verify --api-key`, which `verify` does not accept.
+  They now point to `ulink login --api-key`.
+
 ## [1.4.7] - 2026-11-02
 
 ### Fixed
